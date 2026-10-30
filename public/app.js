@@ -576,6 +576,21 @@ $('#add-photos').addEventListener('change', async (e) => {
   }
 });
 
+// ---------- ekran yüksekliği ----------
+
+// iOS klavye açılınca sayfayı yukarı iter. Uygulamayı görünen alana
+// sığdırıp kaymayı sıfırlayarak başlık ve yazma alanını ekranda tutar.
+function fitViewport() {
+  const vv = window.visualViewport;
+  const h = vv ? vv.height : window.innerHeight;
+  document.documentElement.style.setProperty('--app-h', `${Math.round(h)}px`);
+  window.scrollTo(0, 0);
+}
+window.visualViewport?.addEventListener('resize', fitViewport);
+window.addEventListener('resize', fitViewport);
+document.addEventListener('focusout', () => setTimeout(fitViewport, 100));
+fitViewport();
+
 // ---------- başlangıç ----------
 
 api('/api/me')

@@ -16,8 +16,18 @@
 }
 
 * { box-sizing: border-box; }
-html, body { height: 100%; }
+/* --app-h: klavye açıkken görünen yükseklik (app.js ayarlar). */
+html {
+  height: var(--app-h, 100%);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  overflow: hidden;
+  overscroll-behavior: none;
+}
 body {
+  height: 100%;
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
   margin: 0;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   background: var(--bg);
@@ -32,7 +42,7 @@ input, select { font: inherit; }
 .screen {
   max-width: 480px;
   margin: 0 auto;
-  height: 100dvh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--bg);
@@ -63,7 +73,7 @@ input, select { font: inherit; }
 .form { display: flex; flex-direction: column; gap: 8px; }
 .form input:not([type=file]), .form select, .composer input {
   width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px;
-  background: #fff; color: var(--text); outline: none; font-size: 15px;
+  background: #fff; color: var(--text); outline: none; font-size: 16px;
 }
 .form input:focus, .form select:focus, .composer input:focus { border-color: var(--primary); }
 .photo-row { display: flex; align-items: center; gap: 8px; min-height: 44px; }

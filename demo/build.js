@@ -21,8 +21,9 @@ const botsBundle = `window.BotsModule = (function () {
 
 const demoCss = `
 /* Demo: artifact çerçevesinde tam ekran */
-html, body { height: 100%; background: var(--bg); }
-.screen { height: 100%; }
+html, body { background: var(--bg); }
+/* Claude uygulamasının üstteki kapat/menü butonları sayfanın üstüne biner. */
+@media (pointer: coarse) { body { padding-top: 56px; } }
 .demo-note { font-size: 12px; color: var(--muted); background: var(--accent-soft); border-radius: 10px; padding: 8px 10px; margin: 0 0 12px; text-align: center; }
 `;
 
