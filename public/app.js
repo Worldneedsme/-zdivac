@@ -97,7 +97,7 @@ $$('[data-auth-tab]').forEach((btn) =>
 $('#register-form [name=photos]').addEventListener('change', (e) => {
   const files = [...e.target.files].slice(0, 6);
   $('#register-preview').innerHTML = files
-    .map((f) => `<div class="photo"><img src="${URL.createObjectURL(f)}" alt=""></div>`)
+    .map((f) => `<img src="${URL.createObjectURL(f)}" alt="">`)
     .join('');
 });
 
@@ -374,8 +374,6 @@ function messageHtml(m, conv) {
   return `<div class="msg ${m.type} ${mine ? 'mine' : 'theirs'}">${inner}<span class="time">${fmtTime(m.at)}</span></div>`;
 }
 
-let photosCollapsed = false;
-
 function renderChat(scrollToBottom = false) {
   const conv = state.conversations.get(state.currentId);
   if (!conv) return;
@@ -390,32 +388,31 @@ function renderChat(scrollToBottom = false) {
   $('#chat-info').textContent = infoLine(p);
   $('#chat-status').textContent = state.typing.has(conv.id)
     ? 'yazıyor...'
-    : conv.revealed ? '📸 Fotoğraflar açık' : '🔒 Fotoğraflar gizli';
+    : conv.revealed ? '📸' : '🔒';
   setAvatar($('#chat-avatar'), p);
 
   // İlerleme
-  $('#progress-text').textContent = `${conv.answeredCount}/${conv.requiredQuestions} cevaplandı`;
+  $('#progress-text').textContent = `❓ ${conv.answeredCount}/${conv.requiredQuestions}`;
   $('#progress-bar').style.width = `${(conv.answeredCount / conv.requiredQuestions) * 100}%`;
 
   // Fotoğraf onayı / galeri
   const panel = $('#reveal-panel');
   if (conv.revealed) {
     panel.classList.remove('hidden');
-    panel.innerHTML = `
-      <h3>📸 ${esc(p.name)} adlı kişinin fotoğrafları
-        <button class="toggle" id="toggle-photos">${photosCollapsed ? 'Göster' : 'Gizle'}</button></h3>
-      ${photosCollapsed ? '' : `<div class="photo-grid">${p.photos.map((src) => `<div class="photo"><img src="${src}" alt=""></div>`).join('')}</div>`}`;
-    $('#toggle-photos').onclick = () => { photosCollapsed = !photosCollapsed; renderChat(); };
+    panel.innerHTML = `<div class="thumb-strip"><span>📸</span>${p.photos.map((src) => `<img src="${src}" alt="">`).join('')}</div>`;
   } else if (conv.canApprove) {
     panel.classList.remove('hidden');
     panel.innerHTML = `
-      <h3>🎉 5 soru tamamlandı!</h3>
-      <p>İkiniz de onaylarsanız birbirinizin fotoğraflarını görebileceksiniz.</p>
-      <div class="reveal-status">
-        <span class="pill ${conv.myApproval ? 'ok' : ''}">Sen: ${conv.myApproval ? 'Onayladın ✓' : 'Bekliyor'}</span>
-        <span class="pill ${conv.partnerApproval ? 'ok' : ''}">${esc(p.name)}: ${conv.partnerApproval ? 'Onayladı ✓' : 'Bekliyor'}</span>
-      </div>
-      ${conv.myApproval ? '' : '<button class="btn ok" id="btn-approve">Fotoğrafları açmayı onayla</button>'}`;
+      <div class="reveal-row">
+        <div class="reveal-text">
+          <b>🎉 Fotoğraflar açılsın mı?</b>
+          <div class="reveal-status">
+            <span class="pill ${conv.myApproval ? 'ok' : ''}">Sen: ${conv.myApproval ? 'Onayladın ✓' : 'Bekliyor'}</span>
+            <span class="pill ${conv.partnerApproval ? 'ok' : ''}">${esc(p.name)}: ${conv.partnerApproval ? 'Onayladı ✓' : 'Bekliyor'}</span>
+          </div>
+        </div>
+        ${conv.myApproval ? '' : '<button class="btn ok small" id="btn-approve">Onayla</button>'}
+      </div>`;
     const btn = $('#btn-approve');
     if (btn) btn.onclick = approve;
   } else {
@@ -452,8 +449,8 @@ function renderChat(scrollToBottom = false) {
 
 function renderComposer(conv, { pendingForMe, canAsk }) {
   const modes = [{ key: 'chat', label: 'Mesaj' }];
-  if (pendingForMe) modes.push({ key: 'answer', label: '✍️ Cevapla' });
-  else modes.push({ key: 'question', label: '❓ Soru sor', disabled: !canAsk });
+  if (pendingForMe) modes.push({ key: 'answer', label: '✍️ Cevap' });
+  else modes.push({ key: 'question', label: '❓ Soru', disabled: !canAsk });
 
   $('.mode-switch').innerHTML = modes
     .map((m) => `<button type="button" class="mode ${state.mode === m.key ? 'active' : ''}" data-mode="${m.key}" ${m.disabled ? 'disabled' : ''}>${m.label}</button>`)
@@ -470,7 +467,7 @@ function renderComposer(conv, { pendingForMe, canAsk }) {
   $('#composer').classList.toggle('answering', state.mode !== 'chat');
   input.placeholder = {
     chat: 'Mesaj yaz...',
-    question: `Soru ${conv.questions.length + 1}/${conv.requiredQuestions}: Ne merak ediyorsun?`,
+    question: `Soru ${conv.questions.length + 1}/${conv.requiredQuestions}: ne soracaksın?`,
     answer: 'Cevabını yaz...',
   }[state.mode];
 }

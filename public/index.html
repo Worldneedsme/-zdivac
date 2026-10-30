@@ -11,9 +11,8 @@
   <section id="auth" class="screen hidden">
     <div class="auth-card">
       <div class="brand">
-        <div class="logo">🙈</div>
-        <h1>Kör Randevu</h1>
-        <p>Önce sohbet et. 5 soru, 5 cevap. Sonra ikiniz de isterseniz yüzler açılsın.</p>
+        <h1><span class="logo">🙈</span> Kör Randevu</h1>
+        <p>Önce sohbet, 5 soru. Sonra ikiniz de isterseniz fotoğraflar açılır.</p>
       </div>
       <div class="tabs">
         <button class="tab active" data-auth-tab="login">Giriş</button>
@@ -27,30 +26,36 @@
       </form>
 
       <form id="register-form" class="form hidden">
-        <input name="name" placeholder="İsim" maxlength="30" required>
-        <input name="age" type="number" min="18" max="99" placeholder="Yaş" required>
-        <input name="hometown" placeholder="Nerelisin? (ör. İzmir)" maxlength="40" required>
-        <input name="occupation" placeholder="Ne iş yapıyorsun? (ör. Mimar)" maxlength="40" required>
-        <select name="gender" required>
-          <option value="">Cinsiyetin</option>
-          <option value="kadin">Kadın</option>
-          <option value="erkek">Erkek</option>
-          <option value="diger">Diğer</option>
-        </select>
-        <select name="interestedIn" required>
-          <option value="">Kimi arıyorsun?</option>
-          <option value="kadin">Kadın</option>
-          <option value="erkek">Erkek</option>
-          <option value="herkes">Herkes</option>
-        </select>
+        <div class="row">
+          <input name="name" placeholder="İsim" maxlength="30" required>
+          <input name="age" type="number" min="18" max="99" placeholder="Yaş" required>
+        </div>
+        <div class="row">
+          <input name="hometown" placeholder="Nerelisin?" maxlength="40" required>
+          <input name="occupation" placeholder="Mesleğin" maxlength="40" required>
+        </div>
+        <div class="row">
+          <select name="gender" required>
+            <option value="">Cinsiyetin</option>
+            <option value="kadin">Kadın</option>
+            <option value="erkek">Erkek</option>
+            <option value="diger">Diğer</option>
+          </select>
+          <select name="interestedIn" required>
+            <option value="">Kimi arıyorsun?</option>
+            <option value="kadin">Kadın</option>
+            <option value="erkek">Erkek</option>
+            <option value="herkes">Herkes</option>
+          </select>
+        </div>
         <input name="email" type="email" placeholder="E-posta" required autocomplete="email">
         <input name="password" type="password" placeholder="Şifre (en az 6 karakter)" minlength="6" required autocomplete="new-password">
-        <label class="file-label">
-          📷 Fotoğraflar (1-6 adet)
-          <input name="photos" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple required>
-        </label>
-        <div id="register-preview" class="photo-grid small"></div>
-        <p class="hint">Fotoğrafların sadece 5 soru cevaplandıktan ve ikiniz de onay verdikten sonra görünür.</p>
+        <div class="photo-row">
+          <label class="file-chip">📷 Fotoğraf seç
+            <input name="photos" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden>
+          </label>
+          <div id="register-preview" class="thumbs"><span class="hint">1-6 adet, 5 sorudan sonra görünür</span></div>
+        </div>
         <button class="btn primary" type="submit">Kayıt Ol</button>
       </form>
       <p id="auth-error" class="error"></p>
@@ -81,23 +86,26 @@
 
       <!-- Profil -->
       <div id="view-profile" class="view hidden">
-        <h2 class="view-title">Profilim</h2>
         <div class="profile-head">
           <div id="profile-name" class="profile-name"></div>
           <div id="profile-info" class="info-line"></div>
-          <p class="hint">Diğerleri seni isim, yaş, memleket ve mesleğinle görür. Fotoğrafların 5 sorudan sonra açılır.</p>
+          <p class="hint">Diğerleri seni bu bilgilerle görür. Fotoğrafların 5 sorudan sonra açılır.</p>
         </div>
         <form id="profile-form" class="form profile-form">
-          <input name="hometown" placeholder="Nerelisin?" maxlength="40" required>
-          <input name="occupation" placeholder="Ne iş yapıyorsun?" maxlength="40" required>
+          <div class="row">
+            <input name="hometown" placeholder="Nerelisin?" maxlength="40" required>
+            <input name="occupation" placeholder="Mesleğin" maxlength="40" required>
+          </div>
           <button class="btn secondary" type="submit">Bilgileri kaydet</button>
         </form>
         <div id="profile-photos" class="photo-grid"></div>
-        <label class="btn secondary file-btn">
-          + Fotoğraf ekle
-          <input id="add-photos" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden>
-        </label>
-        <button id="btn-logout" class="btn ghost">Çıkış Yap</button>
+        <div class="row">
+          <label class="btn secondary file-btn">
+            + Fotoğraf ekle
+            <input id="add-photos" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden>
+          </label>
+          <button id="btn-logout" class="btn ghost">Çıkış Yap</button>
+        </div>
       </div>
     </main>
 
@@ -114,30 +122,21 @@
       <button id="btn-back" class="icon-btn" title="Geri">←</button>
       <div id="chat-avatar" class="avatar"></div>
       <div class="chat-who">
-        <div id="chat-name" class="chat-name"></div>
-        <div id="chat-info" class="chat-status"></div>
-        <div id="chat-status" class="chat-status"></div>
+        <div class="chat-name"><span id="chat-name"></span> <span id="chat-status" class="chat-status"></span></div>
+        <div id="chat-info" class="chat-info"></div>
       </div>
+      <span id="progress-text" class="pill q-pill"></span>
     </header>
-
-    <div class="progress-wrap">
-      <div class="progress-label"><span>Sorular</span><span id="progress-text"></span></div>
-      <div class="progress"><div id="progress-bar" class="progress-bar"></div></div>
-    </div>
+    <div class="progress"><div id="progress-bar" class="progress-bar"></div></div>
 
     <div id="reveal-panel" class="reveal-panel hidden"></div>
     <div id="messages" class="messages"></div>
     <div id="pending-panel" class="pending-panel hidden"></div>
 
     <form id="composer" class="composer">
-      <div class="mode-switch">
-        <button type="button" class="mode active" data-mode="chat">Mesaj</button>
-        <button type="button" class="mode" data-mode="question">❓ Soru sor</button>
-      </div>
-      <div class="composer-row">
-        <input id="composer-input" placeholder="Mesaj yaz..." autocomplete="off" maxlength="1000">
-        <button class="btn primary send" type="submit">Gönder</button>
-      </div>
+      <div class="mode-switch"></div>
+      <input id="composer-input" placeholder="Mesaj yaz..." autocomplete="off" maxlength="1000">
+      <button class="btn primary send" type="submit" title="Gönder">➤</button>
     </form>
   </section>
 

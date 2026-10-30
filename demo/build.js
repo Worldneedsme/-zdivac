@@ -38,7 +38,7 @@ const page = [
     .replace('<script src="/app.js"></script>', '')
     .replace(
       '<div class="tabs">',
-      '<p class="demo-note">Demo sürümü: botlarla sohbet edebilirsin. Hesabın ve mesajların sadece bu cihazda saklanır.</p>\n      <div class="tabs">'
+      '<p class="demo-note">Demo: botlarla sohbet et. Veriler sadece bu cihazda saklanır.</p>\n      <div class="tabs">'
     ),
   inlineScript(botsBundle),
   inlineScript(read('demo/mock-server.js')),
