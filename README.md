@@ -24,3 +24,11 @@ Veriler `data/db.json`, fotoğraflar `uploads/` klasöründe tutulur.
 
 - Node.js + Express 5, Socket.io (anlık mesajlar), Multer (fotoğraf yükleme)
 - Arayüz: bağımlılıksız HTML/CSS/JS, mobil öncelikli
+
+## Botlar
+
+Gerçek kullanıcı olmadan denemek için sunucu açılışta 10 bot ekler (`bots.js`):
+5 kadın, 5 erkek; her birinin kendi hikayesi ve çizilmiş 3 fotoğrafı var.
+Botlar seni her zaman geri beğenir, selam verir, sorularına konuya göre cevap verir,
+sırası gelince kendileri soru sorar ve 5 soru dolunca fotoğraf onayı verir.
+Arayüzde 🤖 işaretiyle gösterilirler.

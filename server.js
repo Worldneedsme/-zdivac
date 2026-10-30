@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const multer = require('multer');
 const { Server } = require('socket.io');
 const db = require('./db');
+const { createBots } = require('./bots');
 
 const PORT = process.env.PORT || 3000;
 const REQUIRED_QUESTIONS = 5;
@@ -56,7 +57,7 @@ function startSession(res, userId) {
   res.cookie('token', token, { httpOnly: true, sameSite: 'lax', maxAge: 30 * 24 * 3600 * 1000 });
 }
 
-const publicUser = (u) => ({ id: u.id, name: u.name, age: u.age });
+const publicUser = (u) => ({ id: u.id, name: u.name, age: u.age, isBot: !!u.isBot });
 
 function ownProfile(u) {
   return {
@@ -208,7 +209,7 @@ app.post('/api/login', (req, res) => {
   const email = cleanText(req.body.email, 100).toLowerCase();
   const password = typeof req.body.password === 'string' ? req.body.password : '';
   const user = Object.values(db.data.users).find((u) => u.email === email);
-  if (!user || !verifyPassword(password, user)) {
+  if (!user || !user.passHash || !verifyPassword(password, user)) {
     return res.status(400).json({ error: 'E-posta veya şifre hatalı.' });
   }
   startSession(res, user.id);
@@ -288,6 +289,7 @@ app.post('/api/swipe', auth, (req, res) => {
   if (!target || target.id === me.id) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
   const like = !!req.body.like;
   me.swipes[target.id] = like;
+  if (like) bots.onLiked(target, me);
 
   let conversation = null;
   if (like && target.swipes[me.id] === true) {
@@ -302,6 +304,7 @@ app.post('/api/swipe', auth, (req, res) => {
     db.data.conversations[conv.id] = conv;
     conversation = conversationView(conv, me.id);
     io.to(`user:${target.id}`).emit('match', conversationView(conv, target.id));
+    bots.react(conv);
   }
   db.save();
   res.json({ match: !!conversation, conversation });
@@ -322,77 +325,85 @@ app.get('/api/conversations/:id', auth, (req, res) => {
   if (conv) res.json({ conversation: conversationView(conv, req.user.id) });
 });
 
-app.post('/api/conversations/:id/messages', auth, (req, res) => {
-  const conv = getConversation(req, res);
-  if (!conv) return;
-  const text = cleanText(req.body.text);
-  if (!text) return res.status(400).json({ error: 'Boş mesaj gönderilemez.' });
-  addMessage(conv, req.user.id, 'chat', text);
+// Sohbet işlemleri. Hem HTTP uçları hem botlar bunları kullanır.
+// Hata varsa mesajını döndürür, başarılıysa null.
+function commit(conv) {
   db.save();
   pushConversation(conv);
-  res.json({ conversation: conversationView(conv, req.user.id) });
-});
+  bots.react(conv);
+  return null;
+}
 
-app.post('/api/conversations/:id/questions', auth, (req, res) => {
-  const conv = getConversation(req, res);
-  if (!conv) return;
-  const text = cleanText(req.body.text, 300);
-  if (!text) return res.status(400).json({ error: 'Soru boş olamaz.' });
-  if (answeredCount(conv) >= REQUIRED_QUESTIONS) {
-    return res.status(400).json({ error: `${REQUIRED_QUESTIONS} soru zaten tamamlandı.` });
-  }
-  if (conv.questions.some((q) => !q.answer)) {
-    return res.status(400).json({ error: 'Önce bekleyen sorunun cevaplanması gerekiyor.' });
-  }
-  const question = { id: id(), askerId: req.user.id, text, answer: null, askedAt: now(), answeredAt: null };
-  conv.questions.push(question);
-  addMessage(conv, req.user.id, 'question', text, question.id);
-  db.save();
-  pushConversation(conv);
-  res.json({ conversation: conversationView(conv, req.user.id) });
-});
+const actions = {
+  sendChat(conv, user, rawText) {
+    const text = cleanText(rawText);
+    if (!text) return 'Boş mesaj gönderilemez.';
+    addMessage(conv, user.id, 'chat', text);
+    return commit(conv);
+  },
 
-app.post('/api/conversations/:id/questions/:qid/answer', auth, (req, res) => {
-  const conv = getConversation(req, res);
-  if (!conv) return;
-  const question = conv.questions.find((q) => q.id === req.params.qid);
-  if (!question) return res.status(404).json({ error: 'Soru bulunamadı.' });
-  if (question.answer) return res.status(400).json({ error: 'Bu soru zaten cevaplandı.' });
-  if (question.askerId === req.user.id) return res.status(400).json({ error: 'Kendi sorunu cevaplayamazsın.' });
-  const text = cleanText(req.body.text, 1000);
-  if (!text) return res.status(400).json({ error: 'Cevap boş olamaz.' });
-  question.answer = text;
-  question.answeredAt = now();
-  addMessage(conv, req.user.id, 'answer', text, question.id);
-  if (answeredCount(conv) === REQUIRED_QUESTIONS) {
-    addMessage(conv, null, 'system', `${REQUIRED_QUESTIONS} soru tamamlandı! Artık ikiniz de fotoğrafları açmayı onaylayabilirsiniz.`);
-  }
-  db.save();
-  pushConversation(conv);
-  res.json({ conversation: conversationView(conv, req.user.id) });
-});
+  askQuestion(conv, user, rawText) {
+    const text = cleanText(rawText, 300);
+    if (!text) return 'Soru boş olamaz.';
+    if (answeredCount(conv) >= REQUIRED_QUESTIONS) return `${REQUIRED_QUESTIONS} soru zaten tamamlandı.`;
+    if (conv.questions.some((q) => !q.answer)) return 'Önce bekleyen sorunun cevaplanması gerekiyor.';
+    const question = { id: id(), askerId: user.id, text, answer: null, askedAt: now(), answeredAt: null };
+    conv.questions.push(question);
+    addMessage(conv, user.id, 'question', text, question.id);
+    return commit(conv);
+  },
 
-app.post('/api/conversations/:id/approve', auth, (req, res) => {
-  const conv = getConversation(req, res);
-  if (!conv) return;
-  if (answeredCount(conv) < REQUIRED_QUESTIONS) {
-    return res.status(400).json({ error: `Önce ${REQUIRED_QUESTIONS} sorunun cevaplanması gerekiyor.` });
-  }
-  if (!conv.approvals[req.user.id]) {
-    conv.approvals[req.user.id] = now();
+  answerQuestion(conv, user, questionId, rawText) {
+    const question = conv.questions.find((q) => q.id === questionId);
+    if (!question) return 'Soru bulunamadı.';
+    if (question.answer) return 'Bu soru zaten cevaplandı.';
+    if (question.askerId === user.id) return 'Kendi sorunu cevaplayamazsın.';
+    const text = cleanText(rawText, 1000);
+    if (!text) return 'Cevap boş olamaz.';
+    question.answer = text;
+    question.answeredAt = now();
+    addMessage(conv, user.id, 'answer', text, question.id);
+    if (answeredCount(conv) === REQUIRED_QUESTIONS) {
+      addMessage(conv, null, 'system', `${REQUIRED_QUESTIONS} soru tamamlandı! Artık ikiniz de fotoğrafları açmayı onaylayabilirsiniz.`);
+    }
+    return commit(conv);
+  },
+
+  approvePhotos(conv, user) {
+    if (answeredCount(conv) < REQUIRED_QUESTIONS) return `Önce ${REQUIRED_QUESTIONS} sorunun cevaplanması gerekiyor.`;
+    if (conv.approvals[user.id]) return null;
+    conv.approvals[user.id] = now();
     addMessage(
       conv,
       null,
       'system',
-      isRevealed(conv)
-        ? 'İkiniz de onay verdiniz. Fotoğraflar artık açık! 📸'
-        : `${req.user.name} fotoğrafları açmayı onayladı.`
+      isRevealed(conv) ? 'İkiniz de onay verdiniz. Fotoğraflar artık açık! 📸' : `${user.name} fotoğrafları açmayı onayladı.`
     );
-    db.save();
-    pushConversation(conv);
-  }
-  res.json({ conversation: conversationView(conv, req.user.id) });
-});
+    return commit(conv);
+  },
+};
+
+function conversationRoute(handler) {
+  return (req, res) => {
+    const conv = getConversation(req, res);
+    if (!conv) return;
+    const error = handler(conv, req);
+    if (error) return res.status(400).json({ error });
+    res.json({ conversation: conversationView(conv, req.user.id) });
+  };
+}
+
+app.post('/api/conversations/:id/messages', auth, conversationRoute((conv, req) =>
+  actions.sendChat(conv, req.user, req.body.text)));
+
+app.post('/api/conversations/:id/questions', auth, conversationRoute((conv, req) =>
+  actions.askQuestion(conv, req.user, req.body.text)));
+
+app.post('/api/conversations/:id/questions/:qid/answer', auth, conversationRoute((conv, req) =>
+  actions.answerQuestion(conv, req.user, req.params.qid, req.body.text)));
+
+app.post('/api/conversations/:id/approve', auth, conversationRoute((conv, req) =>
+  actions.approvePhotos(conv, req.user)));
 
 // ---------- gerçek zamanlı ----------
 
@@ -414,4 +425,9 @@ io.on('connection', (socket) => {
   socket.join(`user:${socket.data.userId}`);
 });
 
+// ---------- botlar ----------
+
+const bots = createBots({ db, io, uploadDir: UPLOAD_DIR, actions, requiredQuestions: REQUIRED_QUESTIONS });
+bots.seed();
+bots.resumeAll();
 server.listen(PORT, () => console.log(`Kör Randevu çalışıyor: http://localhost:${PORT}`));

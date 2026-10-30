@@ -8,6 +8,7 @@ const state = {
   currentId: null,
   mode: 'chat', // 'chat' | 'question' | 'answer'
   socket: null,
+  typing: new Set(), // karşı tarafın yazdığı sohbetler
   lastSeen: loadLastSeen(),
 };
 
@@ -69,10 +70,9 @@ function isUnread(conv) {
 
 function setAvatar(el, partner) {
   if (partner.photos.length) {
-    el.style.backgroundImage = `url("${partner.photos[0]}")`;
+    el.style.background = `center / cover url("${partner.photos[0]}")`;
     el.textContent = '';
   } else {
-    el.style.backgroundImage = '';
     el.style.background = gradientFor(partner.id);
     el.textContent = partner.name[0]?.toUpperCase() || '?';
   }
@@ -155,6 +155,12 @@ function connectSocket() {
   const socket = io();
   state.socket = socket;
   socket.on('conversation', (conv) => upsertConversation(conv));
+  socket.on('typing', ({ conversationId, typing }) => {
+    if (typing) state.typing.add(conversationId);
+    else state.typing.delete(conversationId);
+    if (state.currentId === conversationId) renderChat();
+    renderChatList();
+  });
   socket.on('match', (conv) => {
     upsertConversation(conv);
     state.candidates = state.candidates.filter((c) => c.id !== conv.partner.id);
@@ -203,6 +209,7 @@ function renderCards() {
         <div class="mystery">?</div>
         <div class="stamp like">BEĞEN</div>
         <div class="stamp nope">GEÇ</div>
+        ${c.isBot ? '<div class="bot-tag">🤖 Bot</div>' : ''}
         <div class="card-name">${esc(c.name)}, <small>${c.age}</small></div>
         <div class="card-note">🔒 Fotoğraflar 5 sorudan sonra</div>
       </div>`
@@ -289,6 +296,7 @@ function sortedConversations() {
 
 function previewText(conv) {
   const m = conv.lastMessage;
+  if (state.typing.has(conv.id)) return 'yazıyor...';
   if (!m) return 'Yeni eşleşme — ilk soruyu sen sor!';
   const prefix = m.senderId === state.me.id ? 'Sen: ' : '';
   if (m.type === 'question') return `${prefix}❓ ${m.text}`;
@@ -314,7 +322,7 @@ function renderChatList() {
       return `<li class="chat-item" data-id="${c.id}">
         <div class="avatar" data-avatar="${c.id}"></div>
         <div class="meta">
-          <div class="title"><span>${esc(c.partner.name)}, ${c.partner.age}${isUnread(c) ? ' •' : ''}</span>${pill}</div>
+          <div class="title"><span>${esc(c.partner.name)}, ${c.partner.age}${c.partner.isBot ? ' 🤖' : ''}${isUnread(c) ? ' •' : ''}</span>${pill}</div>
           <div class="preview">${esc(previewText(c))}</div>
         </div>
       </li>`;
@@ -370,8 +378,10 @@ function renderChat(scrollToBottom = false) {
   const done = conv.answeredCount >= conv.requiredQuestions;
 
   // Başlık
-  $('#chat-name').textContent = `${p.name}, ${p.age}`;
-  $('#chat-status').textContent = conv.revealed ? '📸 Fotoğraflar açık' : '🔒 Fotoğraflar gizli';
+  $('#chat-name').textContent = `${p.name}, ${p.age}${p.isBot ? ' 🤖' : ''}`;
+  $('#chat-status').textContent = state.typing.has(conv.id)
+    ? 'yazıyor...'
+    : conv.revealed ? '📸 Fotoğraflar açık' : '🔒 Fotoğraflar gizli';
   setAvatar($('#chat-avatar'), p);
 
   // İlerleme
@@ -409,6 +419,7 @@ function renderChat(scrollToBottom = false) {
   box.innerHTML = conv.messages.length
     ? conv.messages.map((m) => messageHtml(m, conv)).join('')
     : `<div class="system">Sadece isim ve yaş görünür. Tanışmak için sohbet edin ve sırayla soru sorun! (${conv.requiredQuestions} soru → fotoğraf onayı)</div>`;
+  if (state.typing.has(conv.id)) box.insertAdjacentHTML('beforeend', '<div class="msg theirs typing"><span></span><span></span><span></span></div>');
   box.querySelectorAll('img').forEach((img) => img.addEventListener('click', () => openLightbox(img.src)));
   panel.querySelectorAll('img').forEach((img) => img.addEventListener('click', () => openLightbox(img.src)));
   if (scrollToBottom || nearBottom) box.scrollTop = box.scrollHeight;
