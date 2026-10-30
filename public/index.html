@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kör Randevu</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- Giriş / Kayıt -->
+  <section id="auth" class="screen hidden">
+    <div class="auth-card">
+      <div class="brand">
+        <div class="logo">🙈</div>
+        <h1>Kör Randevu</h1>
+        <p>Önce sohbet et. 5 soru, 5 cevap. Sonra ikiniz de isterseniz yüzler açılsın.</p>
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-auth-tab="login">Giriş</button>
+        <button class="tab" data-auth-tab="register">Kayıt Ol</button>
+      </div>
+
+      <form id="login-form" class="form">
+        <input name="email" type="email" placeholder="E-posta" required autocomplete="email">
+        <input name="password" type="password" placeholder="Şifre" required autocomplete="current-password">
+        <button class="btn primary" type="submit">Giriş Yap</button>
+      </form>
+
+      <form id="register-form" class="form hidden">
+        <input name="name" placeholder="İsim" maxlength="30" required>
+        <input name="age" type="number" min="18" max="99" placeholder="Yaş" required>
+        <select name="gender" required>
+          <option value="">Cinsiyetin</option>
+          <option value="kadin">Kadın</option>
+          <option value="erkek">Erkek</option>
+          <option value="diger">Diğer</option>
+        </select>
+        <select name="interestedIn" required>
+          <option value="">Kimi arıyorsun?</option>
+          <option value="kadin">Kadın</option>
+          <option value="erkek">Erkek</option>
+          <option value="herkes">Herkes</option>
+        </select>
+        <input name="email" type="email" placeholder="E-posta" required autocomplete="email">
+        <input name="password" type="password" placeholder="Şifre (en az 6 karakter)" minlength="6" required autocomplete="new-password">
+        <label class="file-label">
+          📷 Fotoğraflar (1-6 adet)
+          <input name="photos" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple required>
+        </label>
+        <div id="register-preview" class="photo-grid small"></div>
+        <p class="hint">Fotoğrafların sadece 5 soru cevaplandıktan ve ikiniz de onay verdikten sonra görünür.</p>
+        <button class="btn primary" type="submit">Kayıt Ol</button>
+      </form>
+      <p id="auth-error" class="error"></p>
+    </div>
+  </section>
+
+  <!-- Ana uygulama -->
+  <section id="app" class="screen hidden">
+    <header class="topbar">
+      <span class="topbar-title">🙈 Kör Randevu</span>
+    </header>
+
+    <main>
+      <!-- Keşfet -->
+      <div id="view-discover" class="view">
+        <div id="card-stack" class="card-stack"></div>
+        <div class="swipe-actions">
+          <button id="btn-pass" class="round-btn pass" title="Geç">✕</button>
+          <button id="btn-like" class="round-btn like" title="Beğen">♥</button>
+        </div>
+      </div>
+
+      <!-- Sohbet listesi -->
+      <div id="view-chats" class="view hidden">
+        <h2 class="view-title">Eşleşmeler</h2>
+        <ul id="chat-list" class="chat-list"></ul>
+      </div>
+
+      <!-- Profil -->
+      <div id="view-profile" class="view hidden">
+        <h2 class="view-title">Profilim</h2>
+        <div class="profile-head">
+          <div id="profile-name" class="profile-name"></div>
+          <p class="hint">Diğerleri seni sadece isim ve yaşınla görür.</p>
+        </div>
+        <div id="profile-photos" class="photo-grid"></div>
+        <label class="btn secondary file-btn">
+          + Fotoğraf ekle
+          <input id="add-photos" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden>
+        </label>
+        <button id="btn-logout" class="btn ghost">Çıkış Yap</button>
+      </div>
+    </main>
+
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-view="discover">🔥<span>Keşfet</span></button>
+      <button class="nav-btn" data-view="chats">💬<span>Sohbetler</span><b id="chat-badge" class="badge hidden"></b></button>
+      <button class="nav-btn" data-view="profile">👤<span>Profil</span></button>
+    </nav>
+  </section>
+
+  <!-- Sohbet ekranı -->
+  <section id="chat" class="screen hidden">
+    <header class="chat-header">
+      <button id="btn-back" class="icon-btn" title="Geri">←</button>
+      <div id="chat-avatar" class="avatar"></div>
+      <div class="chat-who">
+        <div id="chat-name" class="chat-name"></div>
+        <div id="chat-status" class="chat-status"></div>
+      </div>
+    </header>
+
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Sorular</span><span id="progress-text"></span></div>
+      <div class="progress"><div id="progress-bar" class="progress-bar"></div></div>
+    </div>
+
+    <div id="reveal-panel" class="reveal-panel hidden"></div>
+    <div id="messages" class="messages"></div>
+    <div id="pending-panel" class="pending-panel hidden"></div>
+
+    <form id="composer" class="composer">
+      <div class="mode-switch">
+        <button type="button" class="mode active" data-mode="chat">Mesaj</button>
+        <button type="button" class="mode" data-mode="question">❓ Soru sor</button>
+      </div>
+      <div class="composer-row">
+        <input id="composer-input" placeholder="Mesaj yaz..." autocomplete="off" maxlength="1000">
+        <button class="btn primary send" type="submit">Gönder</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Eşleşme bildirimi -->
+  <div id="match-modal" class="modal hidden">
+    <div class="modal-card">
+      <div class="match-emoji">💞</div>
+      <h2>Eşleştiniz!</h2>
+      <p id="match-text"></p>
+      <button id="btn-match-chat" class="btn primary">Sohbete başla</button>
+      <button id="btn-match-close" class="btn ghost">Sonra</button>
+    </div>
+  </div>
+
+  <!-- Fotoğraf büyütme -->
+  <div id="lightbox" class="modal hidden"><img alt=""></div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

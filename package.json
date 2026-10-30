@@ -1,0 +1,27 @@
+{
+  "name": "kor-randevu",
+  "version": "1.0.0",
+  "description": "Önce sohbet, sonra fotoğraf: 5 soru cevaplanıp iki taraf onay verince fotoğraflar açılan flört uygulaması",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Worldneedsme/-zdivac.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Worldneedsme/-zdivac/issues"
+  },
+  "homepage": "https://github.com/Worldneedsme/-zdivac#readme",
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "express": "^5.3.0",
+    "multer": "^2.5.0",
+    "socket.io": "^4.8.4"
+  },
+  "private": true
+}
