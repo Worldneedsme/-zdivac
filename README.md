@@ -32,3 +32,10 @@ Gerçek kullanıcı olmadan denemek için sunucu açılışta 10 bot ekler (`bot
 Botlar seni her zaman geri beğenir, selam verir, sorularına konuya göre cevap verir,
 sırası gelince kendileri soru sorar ve 5 soru dolunca fotoğraf onayı verir.
 Arayüzde 🤖 işaretiyle gösterilirler.
+
+## Kurulumsuz demo (telefon için)
+
+`node demo/build.js` arayüzü, botları ve tarayıcıda çalışan sahte bir sunucuyu
+(`demo/mock-server.js`) tek bir HTML dosyasında birleştirir. Bu dosya sunucu olmadan
+açılır; hesaplar ve mesajlar sadece o cihazın tarayıcısında saklanır.
+`server.js`'teki kurallar değişirse `demo/mock-server.js` de güncellenmeli.

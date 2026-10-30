@@ -525,14 +525,19 @@ function renderProfile() {
   $('#profile-form [name=occupation]').value = me.occupation || '';
   $('#profile-photos').innerHTML = me.photos
     .map(
-      (src) => `<div class="photo"><img src="${src}" alt="">
-        ${me.photos.length > 1 ? `<button class="del" data-file="${src.split('/').pop()}" title="Sil">✕</button>` : ''}</div>`
+      (src, i) => `<div class="photo"><img src="${src}" alt="">
+        ${me.photos.length > 1 ? `<button class="del" data-file="${me.photoIds[i]}" title="Sil">✕</button>` : ''}</div>`
     )
     .join('');
   $$('#profile-photos img').forEach((img) => img.addEventListener('click', () => openLightbox(img.src)));
   $$('#profile-photos .del').forEach((b) =>
     b.addEventListener('click', async () => {
-      if (!confirm('Bu fotoğrafı silmek istiyor musun?')) return;
+      // İlk dokunuş onay ister, ikincisi siler.
+      if (!b.classList.contains('armed')) {
+        b.classList.add('armed');
+        b.textContent = 'Sil?';
+        return;
+      }
       try {
         const { user } = await api(`/api/me/photos/${b.dataset.file}`, { method: 'DELETE' });
         state.me = user;

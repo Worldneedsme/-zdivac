@@ -73,6 +73,7 @@ function ownProfile(u) {
     gender: u.gender,
     interestedIn: u.interestedIn,
     photos: u.photos.map((f) => `/photos/${f}`),
+    photoIds: u.photos,
   };
 }
 

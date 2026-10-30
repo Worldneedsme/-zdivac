@@ -407,4 +407,4 @@ function createBots({ db, io, uploadDir, actions, requiredQuestions }) {
   };
 }
 
-module.exports = { createBots };
+module.exports = { createBots, PROFILES, avatarSvg };
