@@ -2,7 +2,7 @@
 
 Önce sohbet, sonra fotoğraf. Tinder benzeri ama farklı bir flört uygulaması:
 
-1. **Keşfet** — Kartlarda sadece **isim ve yaş** görünür. Sağa kaydır (♥) ya da sola (✕).
+1. **Keşfet** — Kartlarda sadece **isim, yaş, memleket ve meslek** görünür. Sağa kaydır (♥) ya da sola (✕).
 2. **Eşleşme** — İki taraf da beğenirse sohbet açılır.
 3. **5 soru** — Sohbette serbestçe yazışabilir, ayrıca "❓ Soru sor" ile soru sorabilirsiniz.
    Bir soru cevaplanmadan yenisi sorulamaz. 5 soru cevaplanınca onay aşaması açılır.

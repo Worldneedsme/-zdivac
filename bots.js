@@ -7,6 +7,7 @@ const path = require('path');
 const PROFILES = [
   {
     key: 'zeynep', name: 'Zeynep', age: 25, gender: 'kadin',
+    hometown: 'İstanbul', occupation: 'Grafik Tasarımcı',
     look: { skin: '#f1c7a5', hair: '#3b2219', shirt: '#e85d75', style: 'long' },
     city: "İstanbul'da, Kadıköy'de yaşıyorum. Moda sahilinde yürümeye bayılırım.",
     job: 'Grafik tasarımcıyım, bir ajansta marka kimlikleri tasarlıyorum.',
@@ -22,6 +23,7 @@ const PROFILES = [
   },
   {
     key: 'elif', name: 'Elif', age: 27, gender: 'kadin',
+    hometown: 'İzmir', occupation: 'Veteriner',
     look: { skin: '#e8b48f', hair: '#6b3e26', shirt: '#4caf8e', style: 'bun' },
     city: "İzmir'de yaşıyorum, Alsancak'ta. Kordon'da gün batımı gibisi yok.",
     job: 'Veterinerim. Her gün bir sürü tüylü dostla uğraşıyorum 🐶',
@@ -37,6 +39,7 @@ const PROFILES = [
   },
   {
     key: 'defne', name: 'Defne', age: 23, gender: 'kadin',
+    hometown: 'Ankara', occupation: 'Psikoloji Öğrencisi',
     look: { skin: '#f6d2b8', hair: '#c98a3c', shirt: '#7b6cf6', style: 'long' },
     city: "Ankara'dayım, Çankaya'da öğrenci evinde yaşıyorum.",
     job: 'Psikoloji son sınıf öğrencisiyim, bir yandan da kafede çalışıyorum.',
@@ -52,6 +55,7 @@ const PROFILES = [
   },
   {
     key: 'selin', name: 'Selin', age: 29, gender: 'kadin',
+    hometown: 'Antalya', occupation: 'Yoga Eğitmeni',
     look: { skin: '#c99272', hair: '#1f1512', shirt: '#f2a541', style: 'short' },
     city: "Antalya'da yaşıyorum, denize beş dakika mesafede.",
     job: 'Yoga eğitmeniyim, kendi küçük stüdyom var 🧘‍♀️',
@@ -67,6 +71,7 @@ const PROFILES = [
   },
   {
     key: 'ece', name: 'Ece', age: 31, gender: 'kadin',
+    hometown: 'Eskişehir', occupation: 'Yazılım Geliştirici',
     look: { skin: '#f0c19c', hair: '#8a2f1d', shirt: '#2f80ed', style: 'long' },
     city: "Eskişehir'de yaşıyorum, Porsuk kenarında bisiklete binmek favorim.",
     job: 'Yazılım geliştiriciyim, uzaktan çalışıyorum 💻',
@@ -82,6 +87,7 @@ const PROFILES = [
   },
   {
     key: 'can', name: 'Can', age: 28, gender: 'erkek',
+    hometown: 'İstanbul', occupation: 'Aşçı',
     look: { skin: '#e3ad86', hair: '#2a1a12', shirt: '#264653', style: 'beard' },
     city: "İstanbul'da, Beşiktaş'ta yaşıyorum.",
     job: 'Aşçıyım, Karaköy\'de bir restoranda sous-chef olarak çalışıyorum 👨‍🍳',
@@ -97,6 +103,7 @@ const PROFILES = [
   },
   {
     key: 'emre', name: 'Emre', age: 26, gender: 'erkek',
+    hometown: 'Bursa', occupation: 'Mimar',
     look: { skin: '#f2c9a8', hair: '#5a3825', shirt: '#e76f51', style: 'short' },
     city: "Bursa'da yaşıyorum, Uludağ manzaralı bir evde.",
     job: 'Mimarım, şu an bir kütüphane projesi üzerinde çalışıyorum.',
@@ -112,6 +119,7 @@ const PROFILES = [
   },
   {
     key: 'burak', name: 'Burak', age: 30, gender: 'erkek',
+    hometown: 'İzmir', occupation: 'Fotoğrafçı',
     look: { skin: '#c68a64', hair: '#111111', shirt: '#2a9d8f', style: 'curly' },
     city: "İzmir'de, Urla'da yaşıyorum. Bağların arasında küçük bir ev.",
     job: 'Fotoğrafçıyım, düğün ve doğa fotoğrafları çekiyorum 📷',
@@ -127,6 +135,7 @@ const PROFILES = [
   },
   {
     key: 'mert', name: 'Mert', age: 24, gender: 'erkek',
+    hometown: 'Ankara', occupation: 'Müzisyen',
     look: { skin: '#f4cfb2', hair: '#a0612b', shirt: '#9b5de5', style: 'long' },
     city: "Ankara'da yaşıyorum, Tunalı'da.",
     job: 'Müzisyenim, bir grupta bas çalıyorum. Gündüzleri de gitar dersi veriyorum 🎸',
@@ -142,6 +151,7 @@ const PROFILES = [
   },
   {
     key: 'kerem', name: 'Kerem', age: 32, gender: 'erkek',
+    hometown: 'Trabzon', occupation: 'Tarih Öğretmeni',
     look: { skin: '#dba27c', hair: '#3d2b1f', shirt: '#457b9d', style: 'beard' },
     city: "Trabzon'dayım, yaylaya yakın yaşamak paha biçilemez.",
     job: 'Tarih öğretmeniyim, lise öğrencilerine anlatıyorum.',
@@ -298,6 +308,8 @@ function createBots({ db, io, uploadDir, actions, requiredQuestions }) {
         age: p.age,
         gender: p.gender,
         interestedIn: 'herkes',
+        hometown: p.hometown,
+        occupation: p.occupation,
         photos,
       };
     }

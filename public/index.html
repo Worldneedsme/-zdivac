@@ -29,6 +29,8 @@
       <form id="register-form" class="form hidden">
         <input name="name" placeholder="İsim" maxlength="30" required>
         <input name="age" type="number" min="18" max="99" placeholder="Yaş" required>
+        <input name="hometown" placeholder="Nerelisin? (ör. İzmir)" maxlength="40" required>
+        <input name="occupation" placeholder="Ne iş yapıyorsun? (ör. Mimar)" maxlength="40" required>
         <select name="gender" required>
           <option value="">Cinsiyetin</option>
           <option value="kadin">Kadın</option>
@@ -82,8 +84,14 @@
         <h2 class="view-title">Profilim</h2>
         <div class="profile-head">
           <div id="profile-name" class="profile-name"></div>
-          <p class="hint">Diğerleri seni sadece isim ve yaşınla görür.</p>
+          <div id="profile-info" class="info-line"></div>
+          <p class="hint">Diğerleri seni isim, yaş, memleket ve mesleğinle görür. Fotoğrafların 5 sorudan sonra açılır.</p>
         </div>
+        <form id="profile-form" class="form profile-form">
+          <input name="hometown" placeholder="Nerelisin?" maxlength="40" required>
+          <input name="occupation" placeholder="Ne iş yapıyorsun?" maxlength="40" required>
+          <button class="btn secondary" type="submit">Bilgileri kaydet</button>
+        </form>
         <div id="profile-photos" class="photo-grid"></div>
         <label class="btn secondary file-btn">
           + Fotoğraf ekle
@@ -107,6 +115,7 @@
       <div id="chat-avatar" class="avatar"></div>
       <div class="chat-who">
         <div id="chat-name" class="chat-name"></div>
+        <div id="chat-info" class="chat-status"></div>
         <div id="chat-status" class="chat-status"></div>
       </div>
     </header>

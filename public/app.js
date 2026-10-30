@@ -68,6 +68,11 @@ function isUnread(conv) {
   return !state.lastSeen[conv.id] || state.lastSeen[conv.id] < last.at;
 }
 
+// "📍 İzmir · 💼 Mimar"
+function infoLine(u) {
+  return [u.hometown && `📍 ${u.hometown}`, u.occupation && `💼 ${u.occupation}`].filter(Boolean).join(' · ');
+}
+
 function setAvatar(el, partner) {
   if (partner.photos.length) {
     el.style.background = `center / cover url("${partner.photos[0]}")`;
@@ -211,6 +216,7 @@ function renderCards() {
         <div class="stamp nope">GEÇ</div>
         ${c.isBot ? '<div class="bot-tag">🤖 Bot</div>' : ''}
         <div class="card-name">${esc(c.name)}, <small>${c.age}</small></div>
+        ${infoLine(c) ? `<div class="card-info">${esc(infoLine(c))}</div>` : ''}
         <div class="card-note">🔒 Fotoğraflar 5 sorudan sonra</div>
       </div>`
     )
@@ -272,7 +278,8 @@ $('#btn-like').addEventListener('click', () => swipe(true));
 $('#btn-pass').addEventListener('click', () => swipe(false));
 
 function showMatch(conv) {
-  $('#match-text').textContent = `${conv.partner.name} (${conv.partner.age}) ile eşleştin. Birbirinize 5 soru sorun, sonra isterseniz fotoğraflar açılsın!`;
+  const info = infoLine(conv.partner);
+  $('#match-text').textContent = `${conv.partner.name} (${conv.partner.age}${info ? ', ' + info : ''}) ile eşleştin. Birbirinize 5 soru sorun, sonra isterseniz fotoğraflar açılsın!`;
   $('#match-modal').classList.remove('hidden');
   $('#btn-match-chat').onclick = () => {
     $('#match-modal').classList.add('hidden');
@@ -323,6 +330,7 @@ function renderChatList() {
         <div class="avatar" data-avatar="${c.id}"></div>
         <div class="meta">
           <div class="title"><span>${esc(c.partner.name)}, ${c.partner.age}${c.partner.isBot ? ' 🤖' : ''}${isUnread(c) ? ' •' : ''}</span>${pill}</div>
+          ${infoLine(c.partner) ? `<div class="info">${esc(infoLine(c.partner))}</div>` : ''}
           <div class="preview">${esc(previewText(c))}</div>
         </div>
       </li>`;
@@ -379,6 +387,7 @@ function renderChat(scrollToBottom = false) {
 
   // Başlık
   $('#chat-name').textContent = `${p.name}, ${p.age}${p.isBot ? ' 🤖' : ''}`;
+  $('#chat-info').textContent = infoLine(p);
   $('#chat-status').textContent = state.typing.has(conv.id)
     ? 'yazıyor...'
     : conv.revealed ? '📸 Fotoğraflar açık' : '🔒 Fotoğraflar gizli';
@@ -511,6 +520,9 @@ $('#lightbox').addEventListener('click', () => $('#lightbox').classList.add('hid
 function renderProfile() {
   const me = state.me;
   $('#profile-name').textContent = `${me.name}, ${me.age}`;
+  $('#profile-info').textContent = infoLine(me);
+  $('#profile-form [name=hometown]').value = me.hometown || '';
+  $('#profile-form [name=occupation]').value = me.occupation || '';
   $('#profile-photos').innerHTML = me.photos
     .map(
       (src) => `<div class="photo"><img src="${src}" alt="">
@@ -531,6 +543,22 @@ function renderProfile() {
     })
   );
 }
+
+$('#profile-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  try {
+    const { user } = await api('/api/me', {
+      method: 'PATCH',
+      body: { hometown: f.get('hometown'), occupation: f.get('occupation') },
+    });
+    state.me = user;
+    renderProfile();
+    toast('Bilgilerin kaydedildi.');
+  } catch (err) {
+    toast(err.message);
+  }
+});
 
 $('#add-photos').addEventListener('change', async (e) => {
   const form = new FormData();

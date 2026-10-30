@@ -57,7 +57,14 @@ function startSession(res, userId) {
   res.cookie('token', token, { httpOnly: true, sameSite: 'lax', maxAge: 30 * 24 * 3600 * 1000 });
 }
 
-const publicUser = (u) => ({ id: u.id, name: u.name, age: u.age, isBot: !!u.isBot });
+const publicUser = (u) => ({
+  id: u.id,
+  name: u.name,
+  age: u.age,
+  hometown: u.hometown || '',
+  occupation: u.occupation || '',
+  isBot: !!u.isBot,
+});
 
 function ownProfile(u) {
   return {
@@ -172,12 +179,16 @@ app.post('/api/register', photoUpload, (req, res) => {
     res.status(400).json({ error: msg });
   };
   const name = cleanText(req.body.name, 30);
+  const hometown = cleanText(req.body.hometown, 40);
+  const occupation = cleanText(req.body.occupation, 40);
   const email = cleanText(req.body.email, 100).toLowerCase();
   const password = typeof req.body.password === 'string' ? req.body.password : '';
   const age = parseInt(req.body.age, 10);
   const { gender, interestedIn } = req.body;
 
   if (!name) return fail('İsim gerekli.');
+  if (!hometown) return fail('Nereli olduğunu yaz.');
+  if (!occupation) return fail('Ne iş yaptığını yaz.');
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('Geçerli bir e-posta gir.');
   if (password.length < 6) return fail('Şifre en az 6 karakter olmalı.');
   if (!(age >= 18 && age <= 99)) return fail('Yaş 18 ile 99 arasında olmalı.');
@@ -194,6 +205,8 @@ app.post('/api/register', photoUpload, (req, res) => {
     age,
     gender,
     interestedIn,
+    hometown,
+    occupation,
     salt,
     passHash: hash,
     photos: req.files.map((f) => f.filename),
@@ -226,6 +239,15 @@ app.post('/api/logout', (req, res) => {
 });
 
 app.get('/api/me', auth, (req, res) => res.json({ user: ownProfile(req.user) }));
+
+app.patch('/api/me', auth, (req, res) => {
+  const hometown = cleanText(req.body.hometown, 40);
+  const occupation = cleanText(req.body.occupation, 40);
+  if (!hometown || !occupation) return res.status(400).json({ error: 'Memleket ve meslek boş olamaz.' });
+  Object.assign(req.user, { hometown, occupation });
+  db.save();
+  res.json({ user: ownProfile(req.user) });
+});
 
 // ---------- profil fotoğrafları ----------
 
