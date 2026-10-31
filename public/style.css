@@ -416,7 +416,6 @@ main { flex: 1; min-height: 0; padding: 0 16px 12px; display: flex; flex-directi
   padding: 14px 16px 16px; background: var(--surface); border-top: 1px solid var(--border); font-size: 13px; color: var(--muted);
 }
 .expired-panel b { color: var(--text); font-size: 14px; }
-.locked-note { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.45; padding: 10px 12px; border-radius: 12px; background: var(--bg); }
 
 /* Keşfet kartında sadece "Hakkımda" var: alıntı gibi ortalanır. */
 .card-body { justify-content: center; }

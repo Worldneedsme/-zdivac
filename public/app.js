@@ -260,7 +260,7 @@ function renderCards() {
       (c, i) => `
       <div class="card" data-id="${c.id}" style="transform:scale(${1 - (top.length - 1 - i) * 0.04}) translateY(${(top.length - 1 - i) * 10}px)">
         ${cardHeadHtml(c)}
-        <div class="card-body">${profileSectionsHtml(c, { locked: true })}</div>
+        <div class="card-body">${profileSectionsHtml(c)}</div>
         <div class="stamp like">BEĞEN</div>
         <div class="stamp nope">GEÇ</div>
       </div>`
@@ -281,8 +281,8 @@ function cardHeadHtml(u, { photos = [] } = {}) {
   </div>`;
 }
 
-// Fotoğraflar açılmadan sunucu sadece "Hakkımda"yı gönderir; locked bunu belirtir.
-function profileSectionsHtml(u, { locked = false } = {}) {
+// Fotoğraflar açılmadan sunucu sadece "Hakkımda"yı gönderir.
+function profileSectionsHtml(u) {
   const p = u.profile || {};
   const { FIELDS } = window.PROFILE_OPTIONS;
   const facts = FIELDS.filter((f) => p[f.key] !== undefined && p[f.key] !== '')
@@ -295,11 +295,7 @@ function profileSectionsHtml(u, { locked = false } = {}) {
     sections.push(`<section><h4>İlgi alanları</h4><div class="chips">${p.interests
       .map((i) => `<span class="chip interest">${esc(i)}</span>`).join('')}</div></section>`);
   }
-  if (!p.bio && !sections.length) sections.push('<p class="hint">Henüz bir şey yazmamış.</p>');
-  if (locked) {
-    sections.push('<p class="locked-note">🔒 Boy, kilo, ilgi alanları ve diğer bilgiler fotoğraflarla birlikte açılır. Merak ettiğini sor!</p>');
-  }
-  return sections.join('');
+  return sections.join('') || '<p class="hint">Henüz bir şey yazmamış.</p>';
 }
 
 function openProfileModal(u) {
@@ -307,7 +303,7 @@ function openProfileModal(u) {
   $('#profile-modal-body').innerHTML = `
     ${cardHeadHtml(u, { photos })}
     ${photos.length ? `<div class="thumb-strip sheet-photos">${photos.map((src) => `<img src="${src}" alt="">`).join('')}</div>` : ''}
-    <div class="sheet-body">${profileSectionsHtml(u, { locked: !photos.length })}</div>`;
+    <div class="sheet-body">${profileSectionsHtml(u)}</div>`;
   $$('#profile-modal-body img').forEach((img) => img.addEventListener('click', () => openLightbox(img.src)));
   $('#profile-modal').classList.remove('hidden');
 }
