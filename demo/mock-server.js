@@ -271,7 +271,7 @@
       resetBtn.textContent = 'Emin misin? Tekrar dokun';
       return;
     }
-    try { localStorage.removeItem(STORE_KEY); localStorage.removeItem('lastSeen'); } catch {}
+    try { localStorage.removeItem(STORE_KEY); localStorage.removeItem('lastSeen'); localStorage.removeItem('revealSeen'); } catch {}
     location.reload();
   });
 

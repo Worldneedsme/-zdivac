@@ -187,7 +187,7 @@ function upsertConversation(conv) {
     if (newQuestionForMe) state.mode = 'answer';
     renderChat();
     markSeen(conv);
-    if (!prev?.revealed && conv.revealed) toast('📸 Fotoğraflar açıldı!');
+    maybePlayReveal(conv);
   }
   renderChatList();
 }
@@ -394,6 +394,23 @@ function openChat(id) {
   markSeen(conv);
   renderChatList();
   $('#composer-input').focus();
+  maybePlayReveal(conv);
+}
+
+// Fotoğraflar açıldıysa ve bu sohbette gösteri henüz izlenmediyse oynat.
+function maybePlayReveal(conv) {
+  if (!conv.revealed) return;
+  let seen = [];
+  try { seen = JSON.parse(localStorage.getItem('revealSeen') || '[]'); } catch {}
+  if (seen.includes(conv.id)) return;
+  seen.push(conv.id);
+  try { localStorage.setItem('revealSeen', JSON.stringify(seen)); } catch {}
+  $('#composer-input').blur();
+  window.playReveal({
+    partner: conv.partner,
+    me: state.me,
+    onLook: () => conv.partner.photos[0] && openLightbox(conv.partner.photos[0]),
+  });
 }
 
 $('#btn-back').addEventListener('click', () => {

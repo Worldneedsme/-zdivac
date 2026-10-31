@@ -70,6 +70,7 @@ const page = [
   body
     .replace('<script src="/socket.io/socket.io.js"></script>', '')
     .replace('<script src="/profile-options.js"></script>', '')
+    .replace('<script src="/reveal.js"></script>', '')
     .replace('<script src="/app.js"></script>', '')
     .replace(
       '<div class="tabs">',
@@ -94,6 +95,7 @@ const page = [
   inlineScript(botsBundle),
   inlineScript(read('public/profile-options.js')),
   inlineScript(read('demo/mock-server.js')),
+  inlineScript(read('public/reveal.js')),
   inlineScript(read('public/app.js')),
 ].join('\n');
 
