@@ -6,7 +6,8 @@
   const { cleanProfile } = window.PROFILE_OPTIONS;
   const REQUIRED_QUESTIONS = 5;
   const MAX_PHOTOS = 6;
-  const STORE_KEY = 'korRandevuDemo';
+  // Anahtar değişince eski demo verileri yok sayılır (sıfırlama).
+  const STORE_KEY = 'korRandevuDemo-v2';
 
   // ---------- veritabanı ----------
 
@@ -227,7 +228,52 @@
       photos: [1, 2, 3].map((i) => `${botId}-${i}.svg`),
     };
   }
+
+  // Hazır demo hesabı: boş bir demoda oluşturulur ve otomatik giriş yapılır.
+  const DEMO_ACCOUNT = { email: 'demo@korrandevu.com', password: '123456' };
+  if (!Object.values(db.data.users).some((u) => !u.isBot)) {
+    const look = { skin: '#eab896', hair: '#4a2c1d', shirt: '#3d5a80', style: 'short' };
+    db.data.photos['demo-1'] = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(avatarSvg({ look }, 0));
+    db.data.photos['demo-2'] = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(avatarSvg({ look }, 2));
+    db.data.users['demo-user'] = {
+      id: 'demo-user',
+      name: 'Deniz',
+      age: 26,
+      hometown: 'İstanbul',
+      occupation: 'Ürün Tasarımcısı',
+      gender: 'diger',
+      interestedIn: 'herkes',
+      ...DEMO_ACCOUNT,
+      profile: {
+        bio: 'Yeni yerler keşfetmeyi, iyi kahveyi ve uzun sohbetleri severim. Önce tanışalım, gerisi gelir ☕',
+        height: 175,
+        education: 'Lisans',
+        zodiac: 'Kova',
+        exercise: 'Bazen',
+        smoking: 'İçmiyor',
+        drinking: 'Sosyal içici',
+        relation: 'Uzun ilişki',
+        interests: ['Seyahat', 'Kahve', 'Müzik', 'Sinema', 'Doğa'],
+      },
+      photos: ['demo-1', 'demo-2'],
+      swipes: {},
+      createdAt: now(),
+    };
+    db.data.currentUser = 'demo-user';
+  }
   db.save();
+
+  // Profil sekmesindeki "Demo'yu sıfırla": ilk dokunuş onay ister, ikincisi siler.
+  const resetBtn = document.getElementById('btn-demo-reset');
+  resetBtn?.addEventListener('click', () => {
+    if (!resetBtn.classList.contains('armed')) {
+      resetBtn.classList.add('armed');
+      resetBtn.textContent = 'Emin misin? Tekrar dokun';
+      return;
+    }
+    try { localStorage.removeItem(STORE_KEY); localStorage.removeItem('lastSeen'); } catch {}
+    location.reload();
+  });
 
   // ---------- API uçları ----------
 

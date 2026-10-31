@@ -54,6 +54,8 @@ html, body { background: var(--bg); }
 .sim-help p { margin: 0 0 10px; color: var(--muted); line-height: 1.5; }
 .sim-help ol { margin: 0; padding-left: 20px; line-height: 1.7; }
 @media (max-width: 1000px) { .sim-help { display: none !important; } }
+.demo-reset { grid-column: 1 / -1; color: var(--danger); font-size: 13px; }
+.demo-reset.armed { background: var(--danger); color: #fff; }
 .demo-note { font-size: 12px; color: var(--muted); background: var(--accent-soft); border-radius: 10px; padding: 8px 10px; margin: 0 0 12px; text-align: center; }
 `;
 
@@ -71,7 +73,11 @@ const page = [
     .replace('<script src="/app.js"></script>', '')
     .replace(
       '<div class="tabs">',
-      '<p class="demo-note">Demo: botlarla sohbet et. Veriler sadece bu cihazda saklanır.</p>\n      <div class="tabs">'
+      '<p class="demo-note">Demo: botlarla sohbet et. Veriler sadece bu cihazda saklanır.<br>Hazır hesap: <b>demo@korrandevu.com</b> / <b>123456</b></p>\n      <div class="tabs">'
+    )
+    .replace(
+      '<button id="btn-logout" class="btn ghost">Çıkış Yap</button>',
+      '<button id="btn-logout" class="btn ghost">Çıkış Yap</button>\n        </div>\n        <div class="row">\n          <button id="btn-demo-reset" class="btn ghost demo-reset" type="button">Demo\'yu sıfırla</button>'
     ),
   '</div>',
   `<aside class="sim-help">
