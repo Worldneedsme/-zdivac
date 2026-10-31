@@ -2,10 +2,13 @@
 
 Önce sohbet, sonra fotoğraf. Tinder benzeri ama farklı bir flört uygulaması:
 
-1. **Keşfet** — Fotoğraf yerine profil kartı görünür: isim, yaş, memleket, meslek; altında
-   hakkımda yazısı, boy, kilo, eğitim, burç, spor/sigara/alkol, ne aradığı ve ilgi alanları.
-   Sağa kaydır (♥) ya da sola (✕). Profil bilgileri Profil sekmesinden doldurulur.
-2. **Eşleşme** — İki taraf da beğenirse sohbet açılır.
+1. **Keşfet** — Fotoğraf yerine kart görünür: isim, yaş, memleket, meslek ve "Hakkımda" yazısı.
+   Boy, kilo, eğitim, burç, ilgi alanları gibi bilgiler fotoğraflarla birlikte açılır;
+   önce sorarak öğrenilsin diye sunucu bunları onaydan önce göndermez.
+2. **Eşleşme** — İki taraf da beğenirse sohbet açılır. Süreler (`public/match-rules.js`):
+   - 24 saat içinde ikiniz de en az bir mesaj yazmalısınız,
+   - ikiniz de yazdıktan sonra 8 saat içinde 5 soru cevaplanmalı.
+   Süre dolarsa sohbet kapanır ve sadece okunabilir kalır. 5 soru bitince süre durur.
 3. **5 soru** — Sohbette serbestçe yazışabilir, ayrıca "❓ Soru sor" ile soru sorabilirsiniz.
    Bir soru cevaplanmadan yenisi sorulamaz. 5 soru cevaplanınca onay aşaması açılır.
 4. **Karşılıklı onay** — İkiniz de "Fotoğrafları açmayı onayla" derseniz profil fotoğrafları görünür.

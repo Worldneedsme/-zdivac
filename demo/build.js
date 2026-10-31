@@ -54,6 +54,7 @@ html, body { background: var(--bg); }
 .sim-help p { margin: 0 0 10px; color: var(--muted); line-height: 1.5; }
 .sim-help ol { margin: 0; padding-left: 20px; line-height: 1.7; }
 @media (max-width: 1000px) { .sim-help { display: none !important; } }
+.demo-skip { grid-column: 1 / -1; font-size: 13px; }
 .demo-reset { grid-column: 1 / -1; color: var(--danger); font-size: 13px; }
 .demo-reset.armed { background: var(--danger); color: #fff; }
 .demo-note { font-size: 12px; color: var(--muted); background: var(--accent-soft); border-radius: 10px; padding: 8px 10px; margin: 0 0 12px; text-align: center; }
@@ -71,6 +72,7 @@ const page = [
     .replace('<script src="/socket.io/socket.io.js"></script>', '')
     .replace('<script src="/profile-options.js"></script>', '')
     .replace('<script src="/reveal.js"></script>', '')
+    .replace('<script src="/match-rules.js"></script>', '')
     .replace('<script src="/app.js"></script>', '')
     .replace(
       '<div class="tabs">',
@@ -78,7 +80,7 @@ const page = [
     )
     .replace(
       '<button id="btn-logout" class="btn ghost">Çıkış Yap</button>',
-      '<button id="btn-logout" class="btn ghost">Çıkış Yap</button>\n        </div>\n        <div class="row">\n          <button id="btn-demo-reset" class="btn ghost demo-reset" type="button">Demo\'yu sıfırla</button>'
+      '<button id="btn-logout" class="btn ghost">Çıkış Yap</button>\n        </div>\n        <div class="row">\n          <button id="btn-demo-skip" class="btn secondary demo-skip" type="button">⏩ Zamanı 4 saat ileri al</button>\n          <button id="btn-demo-reset" class="btn ghost demo-reset" type="button">Demo\'yu sıfırla</button>'
     ),
   '</div>',
   `<aside class="sim-help">
@@ -87,6 +89,7 @@ const page = [
     <ol>
       <li>Kayıt ol (bir fotoğraf seç)</li>
       <li>Kartı beğen ♥, bot eşleşir</li>
+      <li>24 saat içinde ilk mesajı yaz, sonra 8 saatte 5 soru</li>
       <li>"❓ Soru" ile soru sor, gelen sorulara cevap ver</li>
       <li>5 soru dolunca "Onayla"</li>
       <li>İkiniz de onaylayınca fotoğraflar açılır 📸</li>
@@ -94,6 +97,7 @@ const page = [
   </aside>`,
   inlineScript(botsBundle),
   inlineScript(read('public/profile-options.js')),
+  inlineScript(read('public/match-rules.js')),
   inlineScript(read('demo/mock-server.js')),
   inlineScript(read('public/reveal.js')),
   inlineScript(read('public/app.js')),

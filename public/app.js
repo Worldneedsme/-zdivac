@@ -177,9 +177,54 @@ function connectSocket() {
   });
 }
 
+// ---------- süre ----------
+
+// Sunucu saatiyle cihaz saati arasındaki fark (demoda "zamanı ileri al" da buraya yansır).
+function withClock(conv) {
+  conv.clockSkew = Date.parse(conv.serverNow) - Date.now();
+  return conv;
+}
+const timeLeft = (conv) => (conv.expiresAt ? Date.parse(conv.expiresAt) - (Date.now() + conv.clockSkew) : Infinity);
+const isExpired = (conv) => !!conv.expiresAt && (conv.expired || timeLeft(conv) <= 0);
+
+function fmtCountdown(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${pad(Math.floor(s / 3600))}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`;
+}
+function fmtShort(ms) {
+  const m = Math.max(0, Math.ceil(ms / 60000));
+  return m >= 60 ? `${Math.floor(m / 60)} sa` : `${m} dk`;
+}
+
+function renderTimer(conv) {
+  const strip = $('#timer-strip');
+  if (!conv.expiresAt || isExpired(conv)) return strip.classList.add('hidden');
+  const left = timeLeft(conv);
+  const goal = conv.phase === 'start' ? 'İkiniz de ilk mesajı yazın' : `${conv.requiredQuestions} soruyu tamamlayın`;
+  strip.classList.remove('hidden');
+  strip.classList.toggle('urgent', left < window.MATCH_RULES.HOUR);
+  strip.innerHTML = `<span>⏳ ${goal}</span><b>${fmtCountdown(left)}</b>`;
+}
+
+// Saniyede bir: açık sohbetin sayacını güncelle, süresi yeni dolan olursa yeniden çiz.
+let lastListTick = 0;
+setInterval(() => {
+  if (!state.me) return;
+  const conv = state.currentId && state.conversations.get(state.currentId);
+  if (conv) {
+    if (isExpired(conv) && !$('#expired-panel').classList.contains('shown')) renderChat();
+    else renderTimer(conv);
+  }
+  if (Date.now() - lastListTick > 30000) {
+    lastListTick = Date.now();
+    renderChatList();
+  }
+}, 1000);
+
 function upsertConversation(conv) {
   const prev = state.conversations.get(conv.id);
-  state.conversations.set(conv.id, conv);
+  state.conversations.set(conv.id, withClock(conv));
   if (state.currentId === conv.id) {
     // Bana yeni bir soru geldiyse otomatik cevap moduna geç.
     const newQuestionForMe =
@@ -215,7 +260,7 @@ function renderCards() {
       (c, i) => `
       <div class="card" data-id="${c.id}" style="transform:scale(${1 - (top.length - 1 - i) * 0.04}) translateY(${(top.length - 1 - i) * 10}px)">
         ${cardHeadHtml(c)}
-        <div class="card-body">${profileSectionsHtml(c)}</div>
+        <div class="card-body">${profileSectionsHtml(c, { locked: true })}</div>
         <div class="stamp like">BEĞEN</div>
         <div class="stamp nope">GEÇ</div>
       </div>`
@@ -236,7 +281,8 @@ function cardHeadHtml(u, { photos = [] } = {}) {
   </div>`;
 }
 
-function profileSectionsHtml(u) {
+// Fotoğraflar açılmadan sunucu sadece "Hakkımda"yı gönderir; locked bunu belirtir.
+function profileSectionsHtml(u, { locked = false } = {}) {
   const p = u.profile || {};
   const { FIELDS } = window.PROFILE_OPTIONS;
   const facts = FIELDS.filter((f) => p[f.key] !== undefined && p[f.key] !== '')
@@ -249,7 +295,11 @@ function profileSectionsHtml(u) {
     sections.push(`<section><h4>İlgi alanları</h4><div class="chips">${p.interests
       .map((i) => `<span class="chip interest">${esc(i)}</span>`).join('')}</div></section>`);
   }
-  return sections.join('') || '<p class="hint">Henüz profil bilgisi eklememiş. Sohbette sorarak tanı!</p>';
+  if (!p.bio && !sections.length) sections.push('<p class="hint">Henüz bir şey yazmamış.</p>');
+  if (locked) {
+    sections.push('<p class="locked-note">🔒 Boy, kilo, ilgi alanları ve diğer bilgiler fotoğraflarla birlikte açılır. Merak ettiğini sor!</p>');
+  }
+  return sections.join('');
 }
 
 function openProfileModal(u) {
@@ -257,7 +307,7 @@ function openProfileModal(u) {
   $('#profile-modal-body').innerHTML = `
     ${cardHeadHtml(u, { photos })}
     ${photos.length ? `<div class="thumb-strip sheet-photos">${photos.map((src) => `<img src="${src}" alt="">`).join('')}</div>` : ''}
-    <div class="sheet-body">${profileSectionsHtml(u)}</div>`;
+    <div class="sheet-body">${profileSectionsHtml(u, { locked: !photos.length })}</div>`;
   $$('#profile-modal-body img').forEach((img) => img.addEventListener('click', () => openLightbox(img.src)));
   $('#profile-modal').classList.remove('hidden');
 }
@@ -321,7 +371,7 @@ $('#btn-pass').addEventListener('click', () => swipe(false));
 
 function showMatch(conv) {
   const info = infoLine(conv.partner);
-  $('#match-text').textContent = `${conv.partner.name} (${conv.partner.age}${info ? ', ' + info : ''}) ile eşleştin. Birbirinize 5 soru sorun, sonra isterseniz fotoğraflar açılsın!`;
+  $('#match-text').textContent = `${conv.partner.name} (${conv.partner.age}${info ? ', ' + info : ''}) ile eşleştin. 24 saat içinde ikiniz de yazın; sonra 8 saatte 5 soruyu tamamlarsanız fotoğraflar açılabilir.`;
   $('#match-modal').classList.remove('hidden');
   $('#btn-match-chat').onclick = () => {
     $('#match-modal').classList.add('hidden');
@@ -334,13 +384,16 @@ $('#btn-match-close').addEventListener('click', () => $('#match-modal').classLis
 
 async function loadConversations() {
   const { conversations } = await api('/api/conversations');
-  state.conversations = new Map(conversations.map((c) => [c.id, c]));
+  state.conversations = new Map(conversations.map((c) => [c.id, withClock(c)]));
   renderChatList();
 }
 
+// Süresi dolanlar en altta.
 function sortedConversations() {
   const key = (c) => c.lastMessage?.at || c.createdAt;
-  return [...state.conversations.values()].sort((a, b) => key(b).localeCompare(key(a)));
+  return [...state.conversations.values()].sort(
+    (a, b) => isExpired(a) - isExpired(b) || key(b).localeCompare(key(a))
+  );
 }
 
 function previewText(conv) {
@@ -365,10 +418,15 @@ function renderChatList() {
   }
   ul.innerHTML = list
     .map((c) => {
+      const expired = isExpired(c);
+      const left = timeLeft(c);
       const pill = c.revealed
         ? '<span class="pill ok">📸 Açık</span>'
-        : `<span class="pill">❓ ${c.answeredCount}/${c.requiredQuestions}</span>`;
-      return `<li class="chat-item" data-id="${c.id}">
+        : expired
+          ? '<span class="pill gone">⌛ Süresi doldu</span>'
+          : `<span class="pill ${left < window.MATCH_RULES.HOUR ? 'urgent' : ''}">❓ ${c.answeredCount}/${c.requiredQuestions}${
+              c.expiresAt ? ` · ⏳ ${fmtShort(left)}` : ''}</span>`;
+      return `<li class="chat-item ${expired ? 'expired' : ''}" data-id="${c.id}">
         <div class="avatar" data-avatar="${c.id}"></div>
         <div class="meta">
           <div class="title"><span>${esc(c.partner.name)}, ${c.partner.age}${c.partner.isBot ? ' 🤖' : ''}${isUnread(c) ? ' •' : ''}</span>${pill}</div>
@@ -498,6 +556,22 @@ function renderChat(scrollToBottom = false) {
       : `<b>⏳ Sorunun cevabı bekleniyor:</b>${esc(pending.text)}`;
   } else {
     pp.classList.add('hidden');
+  }
+
+  // Süre
+  renderTimer(conv);
+  const expired = isExpired(conv);
+  const ep = $('#expired-panel');
+  ep.classList.toggle('hidden', !expired);
+  ep.classList.toggle('shown', expired);
+  $('#composer').classList.toggle('hidden', expired);
+  if (expired) {
+    pp.classList.add('hidden');
+    ep.innerHTML = `<b>⌛ Bu eşleşmenin süresi doldu</b><span>${
+      conv.phase === 'start'
+        ? '24 saat içinde ikiniz de yazmadınız.'
+        : `8 saat içinde ${conv.requiredQuestions} soru tamamlanmadı.`}</span>`;
+    return;
   }
 
   // Yazma alanı modları
@@ -667,7 +741,8 @@ $('#btn-preview').addEventListener('click', () => {
   for (const key of ['bio', 'height', 'weight', 'education', 'zodiac', 'exercise', 'smoking', 'drinking', 'relation']) {
     if (f.get(key)) profile[key] = f.get(key);
   }
-  openProfileModal({ ...state.me, hometown: f.get('hometown'), occupation: f.get('occupation'), profile, photos: [] });
+  // Eşleşmelerin fotoğraflar açılmadan gördüğü hal: sadece Hakkımda.
+  openProfileModal({ ...state.me, hometown: f.get('hometown'), occupation: f.get('occupation'), profile: profile.bio ? { bio: profile.bio } : {}, photos: [] });
 });
 
 $('#add-photos').addEventListener('change', async (e) => {

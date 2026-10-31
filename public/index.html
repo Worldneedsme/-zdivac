@@ -98,7 +98,7 @@
           </div>
           <label class="field-label" for="pf-bio">Hakkımda</label>
           <textarea id="pf-bio" name="bio" maxlength="200" rows="3" placeholder="Kendini birkaç cümleyle anlat..."></textarea>
-          <label class="field-label">Bilgiler</label>
+          <label class="field-label">Bilgiler <span class="hint">🔒 fotoğraflarla birlikte açılır</span></label>
           <div class="row">
             <input name="height" type="number" min="140" max="220" placeholder="Boy (cm)">
             <input name="weight" type="number" min="40" max="200" placeholder="Kilo (kg)">
@@ -153,11 +153,13 @@
       <span id="progress-text" class="pill q-pill"></span>
     </header>
     <div class="progress"><div id="progress-bar" class="progress-bar"></div></div>
+    <div id="timer-strip" class="timer-strip hidden"></div>
 
     <div id="reveal-panel" class="reveal-panel hidden"></div>
     <div id="messages" class="messages"></div>
     <div id="pending-panel" class="pending-panel hidden"></div>
 
+    <div id="expired-panel" class="expired-panel hidden"></div>
     <form id="composer" class="composer">
       <div class="mode-switch"></div>
       <input id="composer-input" placeholder="Mesaj yaz..." autocomplete="off" maxlength="1000">
@@ -194,6 +196,7 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="/profile-options.js"></script>
+  <script src="/match-rules.js"></script>
   <script src="/reveal.js"></script>
   <script src="/app.js"></script>
 </body>

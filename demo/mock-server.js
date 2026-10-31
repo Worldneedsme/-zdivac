@@ -4,6 +4,7 @@
 (function () {
   const { createBots, PROFILES, avatarSvg } = window.BotsModule;
   const { cleanProfile } = window.PROFILE_OPTIONS;
+  const { matchTiming, HOUR } = window.MATCH_RULES;
   const REQUIRED_QUESTIONS = 5;
   const MAX_PHOTOS = 6;
   // Anahtar değişince eski demo verileri yok sayılır (sıfırlama).
@@ -56,7 +57,9 @@
   // ---------- yardımcılar ----------
 
   const id = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
-  const now = () => new Date().toISOString();
+  // Demo saati: "Zamanı ileri al" butonu timeOffset'i artırır.
+  const clock = () => Date.now() + (db.data.timeOffset || 0);
+  const now = () => new Date(clock()).toISOString();
   const cleanText = (v, max = 1000) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 
   const botSvgCache = {};
@@ -72,18 +75,19 @@
     return db.data.photos[file];
   }
 
-  const publicUser = (u) => ({
+  const publicUser = (u, { full = false } = {}) => ({
     id: u.id,
     name: u.name,
     age: u.age,
     hometown: u.hometown || '',
     occupation: u.occupation || '',
-    profile: u.profile || {},
+    profile: full ? u.profile || {} : pickBio(u.profile),
     isBot: !!u.isBot,
   });
+  const pickBio = (profile) => (profile?.bio ? { bio: profile.bio } : {});
 
   const ownProfile = (u) => ({
-    ...publicUser(u),
+    ...publicUser(u, { full: true }),
     email: u.email,
     gender: u.gender,
     interestedIn: u.interestedIn,
@@ -101,7 +105,9 @@
     const answered = answeredCount(conv);
     return {
       id: conv.id,
-      partner: { ...publicUser(partner), photos: revealed ? partner.photos.map(photoUrl) : [] },
+      ...timing(conv),
+      serverNow: now(),
+      partner: { ...publicUser(partner, { full: revealed }), photos: revealed ? partner.photos.map(photoUrl) : [] },
       messages: conv.messages,
       questions: conv.questions,
       answeredCount: Math.min(answered, REQUIRED_QUESTIONS),
@@ -158,6 +164,9 @@
 
   // ---------- sohbet işlemleri ----------
 
+  const timing = (conv) => matchTiming(conv, clock(), REQUIRED_QUESTIONS);
+  const EXPIRED = 'Bu eşleşmenin süresi doldu.';
+
   function commit(conv) {
     db.save();
     pushConversation(conv);
@@ -167,12 +176,14 @@
 
   const actions = {
     sendChat(conv, user, rawText) {
+      if (timing(conv).expired) return EXPIRED;
       const text = cleanText(rawText);
       if (!text) return 'Boş mesaj gönderilemez.';
       addMessage(conv, user.id, 'chat', text);
       return commit(conv);
     },
     askQuestion(conv, user, rawText) {
+      if (timing(conv).expired) return EXPIRED;
       const text = cleanText(rawText, 300);
       if (!text) return 'Soru boş olamaz.';
       if (answeredCount(conv) >= REQUIRED_QUESTIONS) return `${REQUIRED_QUESTIONS} soru zaten tamamlandı.`;
@@ -183,6 +194,7 @@
       return commit(conv);
     },
     answerQuestion(conv, user, questionId, rawText) {
+      if (timing(conv).expired) return EXPIRED;
       const question = conv.questions.find((q) => q.id === questionId);
       if (!question) return 'Soru bulunamadı.';
       if (question.answer) return 'Bu soru zaten cevaplandı.';
@@ -264,6 +276,15 @@
   db.save();
 
   // Profil sekmesindeki "Demo'yu sıfırla": ilk dokunuş onay ister, ikincisi siler.
+  // "Zamanı ileri al": süre dolmasını beklemeden denemek için demo saatini kaydırır.
+  const skipBtn = document.getElementById('btn-demo-skip');
+  skipBtn?.addEventListener('click', () => {
+    db.data.timeOffset = (db.data.timeOffset || 0) + 4 * HOUR;
+    db.save();
+    for (const conv of Object.values(db.data.conversations)) pushConversation(conv);
+    skipBtn.textContent = `⏩ 4 saat ileri al (şu an +${db.data.timeOffset / HOUR} sa)`;
+  });
+
   const resetBtn = document.getElementById('btn-demo-reset');
   resetBtn?.addEventListener('click', () => {
     if (!resetBtn.classList.contains('armed')) {

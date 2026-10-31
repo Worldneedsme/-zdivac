@@ -399,3 +399,25 @@ main { flex: 1; min-height: 0; padding: 0 16px 12px; display: flex; flex-directi
 @media (prefers-reduced-motion: reduce) {
   .reveal-show, .reveal-show * { transition-duration: 0.01s !important; transition-delay: 0s !important; animation: none !important; }
 }
+
+/* ---------- süre ---------- */
+.timer-strip {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-shrink: 0;
+  padding: 6px 14px; font-size: 12px; color: var(--muted); background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.timer-strip b { font-variant-numeric: tabular-nums; color: var(--text); font-weight: 600; letter-spacing: 0.02em; }
+.timer-strip.urgent { color: var(--danger); background: #fff1f3; }
+.timer-strip.urgent b { color: var(--danger); }
+.pill.urgent { background: #ffe1e6; color: var(--danger); }
+.pill.gone { background: #f1ecee; color: var(--muted); }
+.chat-item.expired { opacity: 0.55; }
+.expired-panel {
+  display: flex; flex-direction: column; gap: 2px; align-items: center; text-align: center; flex-shrink: 0;
+  padding: 14px 16px 16px; background: var(--surface); border-top: 1px solid var(--border); font-size: 13px; color: var(--muted);
+}
+.expired-panel b { color: var(--text); font-size: 14px; }
+.locked-note { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.45; padding: 10px 12px; border-radius: 12px; background: var(--bg); }
+
+/* Keşfet kartında sadece "Hakkımda" var: alıntı gibi ortalanır. */
+.card-body { justify-content: center; }
+.card-body .bio { font-size: 19px; line-height: 1.5; letter-spacing: -0.005em; }

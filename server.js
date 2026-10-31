@@ -9,6 +9,7 @@ const { Server } = require('socket.io');
 const db = require('./db');
 const { createBots } = require('./bots');
 const { cleanProfile } = require('./public/profile-options');
+const { matchTiming } = require('./public/match-rules');
 
 const PORT = process.env.PORT || 3000;
 const REQUIRED_QUESTIONS = 5;
@@ -58,19 +59,22 @@ function startSession(res, userId) {
   res.cookie('token', token, { httpOnly: true, sameSite: 'lax', maxAge: 30 * 24 * 3600 * 1000 });
 }
 
-const publicUser = (u) => ({
+const publicUser = (u, { full = false } = {}) => ({
   id: u.id,
   name: u.name,
   age: u.age,
   hometown: u.hometown || '',
   occupation: u.occupation || '',
-  profile: u.profile || {},
+  // Fotoğraflar açılana kadar profilden sadece "Hakkımda" paylaşılır;
+  // boy, kilo, ilgi alanları gibi bilgiler sorularla öğrenilsin diye gizli.
+  profile: full ? u.profile || {} : pickBio(u.profile),
   isBot: !!u.isBot,
 });
+const pickBio = (profile) => (profile?.bio ? { bio: profile.bio } : {});
 
 function ownProfile(u) {
   return {
-    ...publicUser(u),
+    ...publicUser(u, { full: true }),
     email: u.email,
     gender: u.gender,
     interestedIn: u.interestedIn,
@@ -101,8 +105,10 @@ function conversationView(conv, userId) {
   const lastMessage = conv.messages[conv.messages.length - 1] || null;
   return {
     id: conv.id,
+    ...timing(conv),
+    serverNow: now(),
     partner: {
-      ...publicUser(partner),
+      ...publicUser(partner, { full: revealed }),
       photos: revealed ? partner.photos.map((f) => `/photos/${f}`) : [],
     },
     messages: conv.messages,
@@ -354,6 +360,9 @@ app.get('/api/conversations/:id', auth, (req, res) => {
 
 // Sohbet işlemleri. Hem HTTP uçları hem botlar bunları kullanır.
 // Hata varsa mesajını döndürür, başarılıysa null.
+const timing = (conv) => matchTiming(conv, Date.now(), REQUIRED_QUESTIONS);
+const EXPIRED = 'Bu eşleşmenin süresi doldu.';
+
 function commit(conv) {
   db.save();
   pushConversation(conv);
@@ -363,6 +372,7 @@ function commit(conv) {
 
 const actions = {
   sendChat(conv, user, rawText) {
+    if (timing(conv).expired) return EXPIRED;
     const text = cleanText(rawText);
     if (!text) return 'Boş mesaj gönderilemez.';
     addMessage(conv, user.id, 'chat', text);
@@ -370,6 +380,7 @@ const actions = {
   },
 
   askQuestion(conv, user, rawText) {
+    if (timing(conv).expired) return EXPIRED;
     const text = cleanText(rawText, 300);
     if (!text) return 'Soru boş olamaz.';
     if (answeredCount(conv) >= REQUIRED_QUESTIONS) return `${REQUIRED_QUESTIONS} soru zaten tamamlandı.`;
@@ -381,6 +392,7 @@ const actions = {
   },
 
   answerQuestion(conv, user, questionId, rawText) {
+    if (timing(conv).expired) return EXPIRED;
     const question = conv.questions.find((q) => q.id === questionId);
     if (!question) return 'Soru bulunamadı.';
     if (question.answer) return 'Bu soru zaten cevaplandı.';
