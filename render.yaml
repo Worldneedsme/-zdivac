@@ -1,0 +1,13 @@
+# Render'da tek tıkla yayına almak için:
+# https://render.com/deploy?repo=https://github.com/Worldneedsme/-zdivac
+services:
+  - type: web
+    name: kor-randevu
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "22"

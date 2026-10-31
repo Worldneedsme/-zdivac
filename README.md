@@ -11,6 +11,18 @@
 Fotoğraflar sunucu tarafında korunur: `/photos/...` adresi sadece fotoğrafın sahibine ve
 karşılıklı onay vermiş eşleşmelere açılır (diğer herkese 403).
 
+## İnternette yayına alma (Render)
+
+[![Render'a yükle](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Worldneedsme/-zdivac)
+
+1. Butona bas, GitHub hesabınla Render'a giriş yap ve bu depoya erişim izni ver.
+2. "Apply" / "Deploy" de. Birkaç dakika sonra `https://kor-randevu-xxxx.onrender.com` gibi bir adres verilir.
+3. Bu adresi telefondan ya da herhangi bir yerden açabilirsin.
+
+Ücretsiz planda iki sınırlama var: 15 dakika kullanılmayınca uyku moduna geçer (ilk açılış
+~1 dakika sürer) ve sunucu her yeniden başladığında kayıtlar ile fotoğraflar silinir.
+Kalıcı veri için ücretli plan + disk ya da gerçek bir veritabanı gerekir.
+
 ## Çalıştırma
 
 ```bash
