@@ -151,6 +151,13 @@
         <div id="chat-info" class="chat-info"></div>
       </button>
       <span id="progress-text" class="pill q-pill"></span>
+      <div class="chat-menu">
+        <button id="btn-chat-menu" class="icon-btn menu-btn" type="button" title="Seçenekler">⋯</button>
+        <div id="chat-menu-list" class="menu-list hidden">
+          <button type="button" data-menu="profile">Profili gör</button>
+          <button type="button" data-menu="unmatch" class="danger">Eşleşmeyi kaldır</button>
+        </div>
+      </div>
     </header>
     <div class="progress"><div id="progress-bar" class="progress-bar"></div></div>
     <div id="timer-strip" class="timer-strip hidden"></div>
@@ -175,6 +182,16 @@
       <p id="match-text"></p>
       <button id="btn-match-chat" class="btn primary">Sohbete başla</button>
       <button id="btn-match-close" class="btn ghost">Sonra</button>
+    </div>
+  </div>
+
+  <!-- Eşleşmeyi kaldırma onayı -->
+  <div id="unmatch-modal" class="modal hidden">
+    <div class="modal-card">
+      <h2 class="unmatch-title">Eşleşmeyi kaldır?</h2>
+      <p id="unmatch-text"></p>
+      <button id="btn-unmatch-confirm" class="btn danger-btn" type="button">Eşleşmeyi kaldır</button>
+      <button id="btn-unmatch-cancel" class="btn ghost" type="button">Vazgeç</button>
     </div>
   </div>
 

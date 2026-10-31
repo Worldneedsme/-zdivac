@@ -444,6 +444,19 @@ app.post('/api/conversations/:id/questions/:qid/answer', auth, conversationRoute
 app.post('/api/conversations/:id/approve', auth, conversationRoute((conv, req) =>
   actions.approvePhotos(conv, req.user)));
 
+// Eşleşmeyi kaldır: sohbet iki taraf için de silinir. Kaydırma kayıtları
+// kaldığı için birbirlerini keşfette tekrar görmezler; açılmış fotoğraflara
+// erişim de sohbetle birlikte kapanır.
+app.delete('/api/conversations/:id', auth, (req, res) => {
+  const conv = getConversation(req, res);
+  if (!conv) return;
+  delete db.data.conversations[conv.id];
+  db.save();
+  const partner = partnerOf(conv, req.user.id);
+  io.to(`user:${partner}`).emit('unmatched', { id: conv.id });
+  res.json({ ok: true });
+});
+
 // ---------- gerçek zamanlı ----------
 
 io.use((socket, next) => {

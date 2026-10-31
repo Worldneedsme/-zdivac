@@ -420,3 +420,19 @@ main { flex: 1; min-height: 0; padding: 0 16px 12px; display: flex; flex-directi
 /* Keşfet kartında sadece "Hakkımda" var: alıntı gibi ortalanır. */
 .card-body { justify-content: center; }
 .card-body .bio { font-size: 19px; line-height: 1.5; letter-spacing: -0.005em; }
+
+/* ---------- sohbet menüsü / eşleşmeyi kaldır ---------- */
+.chat-menu { position: relative; flex-shrink: 0; }
+.menu-btn { font-size: 22px; line-height: 1; padding: 4px 6px; color: var(--muted); }
+.menu-list {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 15; min-width: 180px; padding: 6px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow);
+  display: flex; flex-direction: column;
+}
+.menu-list button {
+  border: none; background: none; text-align: left; padding: 10px 12px; border-radius: 10px; font-size: 14px; color: var(--text);
+}
+.menu-list button:hover { background: var(--bg); }
+.menu-list button.danger { color: var(--danger); }
+.unmatch-title { color: var(--text) !important; font-size: 20px; }
+.btn.danger-btn { background: var(--danger); color: #fff; }

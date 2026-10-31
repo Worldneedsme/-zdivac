@@ -460,6 +460,13 @@
       const conv = conversation(convId, user);
       return convResult(conv, user, actions.approvePhotos(conv, user));
     }],
+    ['DELETE', /^\/api\/conversations\/([^/]+)$/, (_, __, [convId]) => {
+      const user = me();
+      const conv = conversation(convId, user);
+      delete db.data.conversations[conv.id];
+      db.save();
+      return { ok: true };
+    }],
   ];
 
   const realFetch = window.fetch.bind(window);

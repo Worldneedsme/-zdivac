@@ -169,6 +169,7 @@ function connectSocket() {
     if (state.currentId === conversationId) renderChat();
     renderChatList();
   });
+  socket.on('unmatched', ({ id }) => removeConversation(id, 'Bir eşleşme kaldırıldı.'));
   socket.on('match', (conv) => {
     upsertConversation(conv);
     state.candidates = state.candidates.filter((c) => c.id !== conv.partner.id);
@@ -375,6 +376,50 @@ function showMatch(conv) {
   };
 }
 $('#btn-match-close').addEventListener('click', () => $('#match-modal').classList.add('hidden'));
+
+// ---------- eşleşmeyi kaldır ----------
+
+function removeConversation(id, message) {
+  if (!state.conversations.delete(id)) return;
+  if (state.currentId === id) {
+    state.currentId = null;
+    $('#unmatch-modal').classList.add('hidden');
+    $('#profile-modal').classList.add('hidden');
+    showScreen('app');
+    switchView('chats');
+  }
+  renderChatList();
+  if (message) toast(message);
+}
+
+const chatMenu = $('#chat-menu-list');
+$('#btn-chat-menu').addEventListener('click', (e) => {
+  e.stopPropagation();
+  chatMenu.classList.toggle('hidden');
+});
+document.addEventListener('click', () => chatMenu.classList.add('hidden'));
+chatMenu.addEventListener('click', (e) => {
+  const action = e.target.closest('[data-menu]')?.dataset.menu;
+  const conv = state.conversations.get(state.currentId);
+  if (!action || !conv) return;
+  if (action === 'profile') openProfileModal(conv.partner);
+  if (action === 'unmatch') {
+    $('#unmatch-text').textContent =
+      `${conv.partner.name} ile sohbetiniz ikiniz için de silinir ve birbirinizi bir daha görmezsiniz.`;
+    $('#unmatch-modal').classList.remove('hidden');
+  }
+});
+$('#btn-unmatch-cancel').addEventListener('click', () => $('#unmatch-modal').classList.add('hidden'));
+$('#btn-unmatch-confirm').addEventListener('click', async () => {
+  const id = state.currentId;
+  try {
+    await api(`/api/conversations/${id}`, { method: 'DELETE' });
+    $('#unmatch-modal').classList.add('hidden');
+    removeConversation(id, 'Eşleşme kaldırıldı.');
+  } catch (err) {
+    toast(err.message);
+  }
+});
 
 // ---------- sohbet listesi ----------
 
