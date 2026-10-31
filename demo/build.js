@@ -53,7 +53,7 @@ html, body { background: var(--bg); }
 .sim-help h2 { margin: 0 0 8px; font-size: 26px; color: var(--primary); }
 .sim-help p { margin: 0 0 10px; color: var(--muted); line-height: 1.5; }
 .sim-help ol { margin: 0; padding-left: 20px; line-height: 1.7; }
-@media (min-width: 700px) and (max-width: 860px) { .sim-help { display: none; } }
+@media (max-width: 1000px) { .sim-help { display: none !important; } }
 .demo-note { font-size: 12px; color: var(--muted); background: var(--accent-soft); border-radius: 10px; padding: 8px 10px; margin: 0 0 12px; text-align: center; }
 `;
 
@@ -67,6 +67,7 @@ const page = [
   '<div class="device">',
   body
     .replace('<script src="/socket.io/socket.io.js"></script>', '')
+    .replace('<script src="/profile-options.js"></script>', '')
     .replace('<script src="/app.js"></script>', '')
     .replace(
       '<div class="tabs">',
@@ -85,6 +86,7 @@ const page = [
     </ol>
   </aside>`,
   inlineScript(botsBundle),
+  inlineScript(read('public/profile-options.js')),
   inlineScript(read('demo/mock-server.js')),
   inlineScript(read('public/app.js')),
 ].join('\n');

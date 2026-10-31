@@ -96,8 +96,33 @@
             <input name="hometown" placeholder="Nerelisin?" maxlength="40" required>
             <input name="occupation" placeholder="Mesleğin" maxlength="40" required>
           </div>
-          <button class="btn secondary" type="submit">Bilgileri kaydet</button>
+          <label class="field-label" for="pf-bio">Hakkımda</label>
+          <textarea id="pf-bio" name="bio" maxlength="200" rows="3" placeholder="Kendini birkaç cümleyle anlat..."></textarea>
+          <label class="field-label">Bilgiler</label>
+          <div class="row">
+            <input name="height" type="number" min="140" max="220" placeholder="Boy (cm)">
+            <input name="weight" type="number" min="40" max="200" placeholder="Kilo (kg)">
+          </div>
+          <div class="row">
+            <select name="education" data-options="education" data-placeholder="Eğitim"></select>
+            <select name="zodiac" data-options="zodiac" data-placeholder="Burç"></select>
+          </div>
+          <div class="row">
+            <select name="exercise" data-options="exercise" data-placeholder="Spor"></select>
+            <select name="smoking" data-options="smoking" data-placeholder="Sigara"></select>
+          </div>
+          <div class="row">
+            <select name="drinking" data-options="drinking" data-placeholder="Alkol"></select>
+            <select name="relation" data-options="relation" data-placeholder="Ne arıyorsun?"></select>
+          </div>
+          <label class="field-label">İlgi alanları <span id="interest-count" class="hint"></span></label>
+          <div id="interest-picker" class="chips pickable"></div>
+          <div class="row">
+            <button class="btn primary" type="submit">Kaydet</button>
+            <button id="btn-preview" class="btn secondary" type="button">Kartımı önizle</button>
+          </div>
         </form>
+        <label class="field-label">Fotoğraflarım</label>
         <div id="profile-photos" class="photo-grid"></div>
         <div class="row">
           <label class="btn secondary file-btn">
@@ -121,10 +146,10 @@
     <header class="chat-header">
       <button id="btn-back" class="icon-btn" title="Geri">←</button>
       <div id="chat-avatar" class="avatar"></div>
-      <div class="chat-who">
+      <button id="chat-who" class="chat-who" type="button" title="Profili gör">
         <div class="chat-name"><span id="chat-name"></span> <span id="chat-status" class="chat-status"></span></div>
         <div id="chat-info" class="chat-info"></div>
-      </div>
+      </button>
       <span id="progress-text" class="pill q-pill"></span>
     </header>
     <div class="progress"><div id="progress-bar" class="progress-bar"></div></div>
@@ -151,12 +176,21 @@
     </div>
   </div>
 
+  <!-- Profil kartı -->
+  <div id="profile-modal" class="modal hidden">
+    <div class="sheet">
+      <button id="btn-profile-close" class="sheet-close" type="button" title="Kapat">✕</button>
+      <div id="profile-modal-body"></div>
+    </div>
+  </div>
+
   <!-- Fotoğraf büyütme -->
   <div id="lightbox" class="modal hidden"><img alt=""></div>
 
   <div id="toast" class="toast hidden"></div>
 
   <script src="/socket.io/socket.io.js"></script>
+  <script src="/profile-options.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

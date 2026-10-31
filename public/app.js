@@ -10,6 +10,7 @@ const state = {
   socket: null,
   typing: new Set(), // karşı tarafın yazdığı sohbetler
   lastSeen: loadLastSeen(),
+  interests: new Set(), // profil formunda seçili ilgi alanları
 };
 
 // ---------- yardımcılar ----------
@@ -118,7 +119,9 @@ $('#register-form').addEventListener('submit', async (e) => {
   btn.disabled = true;
   try {
     const { user } = await api('/api/register', { method: 'POST', form: new FormData(e.target) });
-    onLoggedIn(user);
+    await onLoggedIn(user);
+    switchView('profile');
+    toast('Hoş geldin! Profilini doldur, kartında bunlar görünecek.');
   } catch (err) {
     $('#auth-error').textContent = err.message;
   } finally {
@@ -210,19 +213,58 @@ function renderCards() {
   stack.innerHTML = top
     .map(
       (c, i) => `
-      <div class="card" data-id="${c.id}" style="background:${gradientFor(c.id)};transform:scale(${1 - (top.length - 1 - i) * 0.04}) translateY(${(top.length - 1 - i) * 10}px)">
-        <div class="mystery">?</div>
+      <div class="card" data-id="${c.id}" style="transform:scale(${1 - (top.length - 1 - i) * 0.04}) translateY(${(top.length - 1 - i) * 10}px)">
+        ${cardHeadHtml(c)}
+        <div class="card-body">${profileSectionsHtml(c)}</div>
         <div class="stamp like">BEĞEN</div>
         <div class="stamp nope">GEÇ</div>
-        ${c.isBot ? '<div class="bot-tag">🤖 Bot</div>' : ''}
-        <div class="card-name">${esc(c.name)}, <small>${c.age}</small></div>
-        ${infoLine(c) ? `<div class="card-info">${esc(infoLine(c))}</div>` : ''}
-        <div class="card-note">🔒 Fotoğraflar 5 sorudan sonra</div>
       </div>`
     )
     .join('');
   enableDrag(stack.lastElementChild);
 }
+
+// Fotoğraflar gizli olduğu için kartın üstü kişinin kimliğini,
+// gövdesi de profil bilgilerini taşır.
+function cardHeadHtml(u, { photos = [] } = {}) {
+  const note = photos.length ? '📸 Fotoğraflar açık' : '🔒 Fotoğraflar 5 sorudan sonra';
+  return `<div class="card-head" style="background:${gradientFor(u.id)}">
+    ${u.isBot ? '<div class="bot-tag">🤖 Bot</div>' : ''}
+    <div class="card-name">${esc(u.name)}, <small>${u.age}</small></div>
+    ${infoLine(u) ? `<div class="card-info">${esc(infoLine(u))}</div>` : ''}
+    <div class="card-note">${note}</div>
+  </div>`;
+}
+
+function profileSectionsHtml(u) {
+  const p = u.profile || {};
+  const { FIELDS } = window.PROFILE_OPTIONS;
+  const facts = FIELDS.filter((f) => p[f.key] !== undefined && p[f.key] !== '')
+    .map((f) => `<span class="chip">${f.icon} ${esc(f.format ? f.format(p[f.key]) : p[f.key])}</span>`)
+    .join('');
+  const sections = [];
+  if (p.bio) sections.push(`<section><h4>Hakkımda</h4><p class="bio">${esc(p.bio)}</p></section>`);
+  if (facts) sections.push(`<section><h4>Bilgiler</h4><div class="chips">${facts}</div></section>`);
+  if (p.interests?.length) {
+    sections.push(`<section><h4>İlgi alanları</h4><div class="chips">${p.interests
+      .map((i) => `<span class="chip interest">${esc(i)}</span>`).join('')}</div></section>`);
+  }
+  return sections.join('') || '<p class="hint">Henüz profil bilgisi eklememiş. Sohbette sorarak tanı!</p>';
+}
+
+function openProfileModal(u) {
+  const photos = u.photos || [];
+  $('#profile-modal-body').innerHTML = `
+    ${cardHeadHtml(u, { photos })}
+    ${photos.length ? `<div class="thumb-strip sheet-photos">${photos.map((src) => `<img src="${src}" alt="">`).join('')}</div>` : ''}
+    <div class="sheet-body">${profileSectionsHtml(u)}</div>`;
+  $$('#profile-modal-body img').forEach((img) => img.addEventListener('click', () => openLightbox(img.src)));
+  $('#profile-modal').classList.remove('hidden');
+}
+$('#btn-profile-close').addEventListener('click', () => $('#profile-modal').classList.add('hidden'));
+$('#profile-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'profile-modal') $('#profile-modal').classList.add('hidden');
+});
 
 function enableDrag(card) {
   let startX = 0, dx = 0, dragging = false;
@@ -390,6 +432,7 @@ function renderChat(scrollToBottom = false) {
     ? 'yazıyor...'
     : conv.revealed ? '📸' : '🔒';
   setAvatar($('#chat-avatar'), p);
+  $('#chat-who').onclick = () => openProfileModal(p);
 
   // İlerleme
   $('#progress-text').textContent = `❓ ${conv.answeredCount}/${conv.requiredQuestions}`;
@@ -518,8 +561,16 @@ function renderProfile() {
   const me = state.me;
   $('#profile-name').textContent = `${me.name}, ${me.age}`;
   $('#profile-info').textContent = infoLine(me);
-  $('#profile-form [name=hometown]').value = me.hometown || '';
-  $('#profile-form [name=occupation]').value = me.occupation || '';
+  const form = $('#profile-form');
+  const p = me.profile || {};
+  form.hometown.value = me.hometown || '';
+  form.occupation.value = me.occupation || '';
+  form.bio.value = p.bio || '';
+  form.height.value = p.height || '';
+  form.weight.value = p.weight || '';
+  for (const select of form.querySelectorAll('select[data-options]')) select.value = p[select.name] || '';
+  state.interests = new Set(p.interests || []);
+  renderInterestPicker();
   $('#profile-photos').innerHTML = me.photos
     .map(
       (src, i) => `<div class="photo"><img src="${src}" alt="">
@@ -550,16 +601,57 @@ $('#profile-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = new FormData(e.target);
   try {
+    const profile = { interests: [...state.interests] };
+    for (const key of ['bio', 'height', 'weight', 'education', 'zodiac', 'exercise', 'smoking', 'drinking', 'relation']) {
+      profile[key] = f.get(key);
+    }
     const { user } = await api('/api/me', {
       method: 'PATCH',
-      body: { hometown: f.get('hometown'), occupation: f.get('occupation') },
+      body: { hometown: f.get('hometown'), occupation: f.get('occupation'), profile },
     });
     state.me = user;
     renderProfile();
-    toast('Bilgilerin kaydedildi.');
+    toast('Profilin kaydedildi.');
   } catch (err) {
     toast(err.message);
   }
+});
+
+// Seçim kutularını ve ilgi alanı çiplerini ortak seçeneklerden doldur.
+for (const select of $$('#profile-form select[data-options]')) {
+  const opts = window.PROFILE_OPTIONS.OPTIONS[select.dataset.options];
+  select.innerHTML = `<option value="">${select.dataset.placeholder}</option>` +
+    opts.map((o) => `<option value="${esc(o)}">${esc(o)}</option>`).join('');
+}
+
+function renderInterestPicker() {
+  const { OPTIONS, MAX_INTERESTS } = window.PROFILE_OPTIONS;
+  const full = state.interests.size >= MAX_INTERESTS;
+  $('#interest-count').textContent = `(${state.interests.size}/${MAX_INTERESTS})`;
+  $('#interest-picker').innerHTML = OPTIONS.interests
+    .map((i) => {
+      const on = state.interests.has(i);
+      return `<button type="button" class="chip ${on ? 'on' : ''}" data-interest="${esc(i)}" ${!on && full ? 'disabled' : ''}>${esc(i)}</button>`;
+    })
+    .join('');
+}
+$('#interest-picker').addEventListener('click', (e) => {
+  const chip = e.target.closest('[data-interest]');
+  if (!chip) return;
+  const i = chip.dataset.interest;
+  if (state.interests.has(i)) state.interests.delete(i);
+  else state.interests.add(i);
+  renderInterestPicker();
+});
+
+$('#btn-preview').addEventListener('click', () => {
+  // Diğerlerinin göreceği hali: kaydedilmemiş değişikliklerle birlikte, fotoğrafsız.
+  const f = new FormData($('#profile-form'));
+  const profile = { interests: [...state.interests] };
+  for (const key of ['bio', 'height', 'weight', 'education', 'zodiac', 'exercise', 'smoking', 'drinking', 'relation']) {
+    if (f.get(key)) profile[key] = f.get(key);
+  }
+  openProfileModal({ ...state.me, hometown: f.get('hometown'), occupation: f.get('occupation'), profile, photos: [] });
 });
 
 $('#add-photos').addEventListener('change', async (e) => {

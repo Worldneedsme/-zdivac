@@ -3,6 +3,7 @@
 // Kurallar server.js ile aynı olmalı; orada bir şey değişirse burada da değiştir.
 (function () {
   const { createBots, PROFILES, avatarSvg } = window.BotsModule;
+  const { cleanProfile } = window.PROFILE_OPTIONS;
   const REQUIRED_QUESTIONS = 5;
   const MAX_PHOTOS = 6;
   const STORE_KEY = 'korRandevuDemo';
@@ -76,6 +77,7 @@
     age: u.age,
     hometown: u.hometown || '',
     occupation: u.occupation || '',
+    profile: u.profile || {},
     isBot: !!u.isBot,
   });
 
@@ -221,6 +223,7 @@
       interestedIn: 'herkes',
       hometown: p.hometown,
       occupation: p.occupation,
+      profile: p.card,
       photos: [1, 2, 3].map((i) => `${botId}-${i}.svg`),
     };
   }
@@ -308,7 +311,9 @@
       const hometown = cleanText(body.hometown, 40);
       const occupation = cleanText(body.occupation, 40);
       if (!hometown || !occupation) fail('Memleket ve meslek boş olamaz.');
-      Object.assign(user, { hometown, occupation });
+      const { profile, error } = cleanProfile(body.profile);
+      if (error) fail(error);
+      Object.assign(user, { hometown, occupation, profile });
       db.save();
       return { user: ownProfile(user) };
     }],

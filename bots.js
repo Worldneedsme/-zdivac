@@ -8,6 +8,7 @@ const PROFILES = [
   {
     key: 'zeynep', name: 'Zeynep', age: 25, gender: 'kadin',
     hometown: 'İstanbul', occupation: 'Grafik Tasarımcı',
+    card: {"bio": "Gece yarısı çizim yapan, kahvesiz açılmayan bir tasarımcı. Bana iyi bir sergi önerirsen kalbimi kazanırsın 🎨", "height": 165, "weight": 55, "education": "Lisans", "zodiac": "İkizler", "exercise": "Bazen", "smoking": "İçmiyor", "drinking": "Sosyal içici", "relation": "Uzun ilişki", "interests": ["Sanat", "Kahve", "Müzik", "Sinema", "Fotoğraf"]},
     look: { skin: '#f1c7a5', hair: '#3b2219', shirt: '#e85d75', style: 'long' },
     city: "İstanbul'da, Kadıköy'de yaşıyorum. Moda sahilinde yürümeye bayılırım.",
     job: 'Grafik tasarımcıyım, bir ajansta marka kimlikleri tasarlıyorum.',
@@ -24,6 +25,7 @@ const PROFILES = [
   {
     key: 'elif', name: 'Elif', age: 27, gender: 'kadin',
     hometown: 'İzmir', occupation: 'Veteriner',
+    card: {"bio": "Veterinerim, iki köpeğim ve bitmeyen bir enerjim var. Sabah koşusuna eşlik edecek birini arıyorum 🐶", "height": 170, "weight": 60, "education": "Lisans", "zodiac": "Başak", "exercise": "Her gün", "smoking": "İçmiyor", "drinking": "Sosyal içici", "relation": "Uzun ilişki", "interests": ["Hayvanlar", "Doğa", "Spor", "Deniz", "Kamp"]},
     look: { skin: '#e8b48f', hair: '#6b3e26', shirt: '#4caf8e', style: 'bun' },
     city: "İzmir'de yaşıyorum, Alsancak'ta. Kordon'da gün batımı gibisi yok.",
     job: 'Veterinerim. Her gün bir sürü tüylü dostla uğraşıyorum 🐶',
@@ -40,6 +42,7 @@ const PROFILES = [
   {
     key: 'defne', name: 'Defne', age: 23, gender: 'kadin',
     hometown: 'Ankara', occupation: 'Psikoloji Öğrencisi',
+    card: {"bio": "Psikoloji son sınıf. İnsanları dinlemeyi severim ama önce sen anlat 😄 Kutu oyunlarında yenilmem.", "height": 162, "weight": 52, "education": "Lisans", "zodiac": "Balık", "exercise": "Bazen", "smoking": "İçmiyor", "drinking": "İçmiyor", "relation": "Henüz bilmiyor", "interests": ["Kitap", "Dizi", "Oyun", "Müzik", "Kahve"]},
     look: { skin: '#f6d2b8', hair: '#c98a3c', shirt: '#7b6cf6', style: 'long' },
     city: "Ankara'dayım, Çankaya'da öğrenci evinde yaşıyorum.",
     job: 'Psikoloji son sınıf öğrencisiyim, bir yandan da kafede çalışıyorum.',
@@ -56,6 +59,7 @@ const PROFILES = [
   {
     key: 'selin', name: 'Selin', age: 29, gender: 'kadin',
     hometown: 'Antalya', occupation: 'Yoga Eğitmeni',
+    card: {"bio": "Gün doğumunda yoga, gün batımında sörf. Hayatı çok ciddiye almayan, huzurlu biriyim 🌊", "height": 168, "weight": 57, "education": "Lisans", "zodiac": "Terazi", "exercise": "Her gün", "smoking": "İçmiyor", "drinking": "İçmiyor", "relation": "Uzun ilişki", "interests": ["Yoga", "Deniz", "Seyahat", "Doğa", "Dans"]},
     look: { skin: '#c99272', hair: '#1f1512', shirt: '#f2a541', style: 'short' },
     city: "Antalya'da yaşıyorum, denize beş dakika mesafede.",
     job: 'Yoga eğitmeniyim, kendi küçük stüdyom var 🧘‍♀️',
@@ -72,6 +76,7 @@ const PROFILES = [
   {
     key: 'ece', name: 'Ece', age: 31, gender: 'kadin',
     hometown: 'Eskişehir', occupation: 'Yazılım Geliştirici',
+    card: {"bio": "Uzaktan çalışan yazılımcı, rock konseri müdavimi. Bilim kurgu filmi önerisine her zaman açığım 🚀", "height": 172, "weight": 63, "education": "Yüksek lisans", "zodiac": "Kova", "exercise": "Sık sık", "smoking": "Ara sıra", "drinking": "Seviyor", "relation": "Eğlenceli bir şey", "interests": ["Teknoloji", "Konser", "Sinema", "Oyun", "Yemek"]},
     look: { skin: '#f0c19c', hair: '#8a2f1d', shirt: '#2f80ed', style: 'long' },
     city: "Eskişehir'de yaşıyorum, Porsuk kenarında bisiklete binmek favorim.",
     job: 'Yazılım geliştiriciyim, uzaktan çalışıyorum 💻',
@@ -88,6 +93,7 @@ const PROFILES = [
   {
     key: 'can', name: 'Can', age: 28, gender: 'erkek',
     hometown: 'İstanbul', occupation: 'Aşçı',
+    card: {"bio": "Mutfakta caz, sofrada uzun sohbet. Sana yapacağım ilk yemeği şimdiden düşünüyorum 👨‍🍳", "height": 182, "weight": 80, "education": "Ön lisans", "zodiac": "Boğa", "exercise": "Bazen", "smoking": "Ara sıra", "drinking": "Seviyor", "relation": "Uzun ilişki", "interests": ["Yemek", "Müzik", "Seyahat", "Kahve", "Konser"]},
     look: { skin: '#e3ad86', hair: '#2a1a12', shirt: '#264653', style: 'beard' },
     city: "İstanbul'da, Beşiktaş'ta yaşıyorum.",
     job: 'Aşçıyım, Karaköy\'de bir restoranda sous-chef olarak çalışıyorum 👨‍🍳',
@@ -104,6 +110,7 @@ const PROFILES = [
   {
     key: 'emre', name: 'Emre', age: 26, gender: 'erkek',
     hometown: 'Bursa', occupation: 'Mimar',
+    card: {"bio": "Mimarım, simetri hastasıyım. Kışın kayak, yazın bisiklet; arada eski binaların fotoğrafını çekerim.", "height": 178, "weight": 74, "education": "Yüksek lisans", "zodiac": "Oğlak", "exercise": "Sık sık", "smoking": "İçmiyor", "drinking": "Sosyal içici", "relation": "Uzun ilişki", "interests": ["Sanat", "Fotoğraf", "Spor", "Seyahat", "Sinema"]},
     look: { skin: '#f2c9a8', hair: '#5a3825', shirt: '#e76f51', style: 'short' },
     city: "Bursa'da yaşıyorum, Uludağ manzaralı bir evde.",
     job: 'Mimarım, şu an bir kütüphane projesi üzerinde çalışıyorum.',
@@ -120,6 +127,7 @@ const PROFILES = [
   {
     key: 'burak', name: 'Burak', age: 30, gender: 'erkek',
     hometown: 'İzmir', occupation: 'Fotoğrafçı',
+    card: {"bio": "Fotoğrafçıyım, köpeğim Zeytin her çekimde yanımda. Kamp ateşinde gitar çalmayı severim 🔥", "height": 185, "weight": 82, "education": "Lisans", "zodiac": "Yay", "exercise": "Sık sık", "smoking": "İçmiyor", "drinking": "Sosyal içici", "relation": "Eğlenceli bir şey", "interests": ["Fotoğraf", "Kamp", "Doğa", "Hayvanlar", "Müzik"]},
     look: { skin: '#c68a64', hair: '#111111', shirt: '#2a9d8f', style: 'curly' },
     city: "İzmir'de, Urla'da yaşıyorum. Bağların arasında küçük bir ev.",
     job: 'Fotoğrafçıyım, düğün ve doğa fotoğrafları çekiyorum 📷',
@@ -136,6 +144,7 @@ const PROFILES = [
   {
     key: 'mert', name: 'Mert', age: 24, gender: 'erkek',
     hometown: 'Ankara', occupation: 'Müzisyen',
+    card: {"bio": "Bas gitarist, gece kuşu. Konsere birlikte gideceğimiz biri olsun, gerisi kolay 🎸", "height": 176, "weight": 68, "education": "Lisans", "zodiac": "Aslan", "exercise": "Hiç", "smoking": "İçiyor", "drinking": "Seviyor", "relation": "Henüz bilmiyor", "interests": ["Müzik", "Konser", "Sinema", "Oyun", "Kahve"]},
     look: { skin: '#f4cfb2', hair: '#a0612b', shirt: '#9b5de5', style: 'long' },
     city: "Ankara'da yaşıyorum, Tunalı'da.",
     job: 'Müzisyenim, bir grupta bas çalıyorum. Gündüzleri de gitar dersi veriyorum 🎸',
@@ -152,6 +161,7 @@ const PROFILES = [
   {
     key: 'kerem', name: 'Kerem', age: 32, gender: 'erkek',
     hometown: 'Trabzon', occupation: 'Tarih Öğretmeni',
+    card: {"bio": "Tarih öğretmeni, yayla sevdalısı. Satrançta iddialıyım, horonda daha da iddialıyım 😄", "height": 180, "weight": 78, "education": "Lisans", "zodiac": "Akrep", "exercise": "Bazen", "smoking": "İçmiyor", "drinking": "Sosyal içici", "relation": "Uzun ilişki", "interests": ["Kitap", "Doğa", "Dans", "Yemek", "Seyahat"]},
     look: { skin: '#dba27c', hair: '#3d2b1f', shirt: '#457b9d', style: 'beard' },
     city: "Trabzon'dayım, yaylaya yakın yaşamak paha biçilemez.",
     job: 'Tarih öğretmeniyim, lise öğrencilerine anlatıyorum.',
@@ -310,6 +320,7 @@ function createBots({ db, io, uploadDir, actions, requiredQuestions }) {
         interestedIn: 'herkes',
         hometown: p.hometown,
         occupation: p.occupation,
+        profile: p.card,
         photos,
       };
     }

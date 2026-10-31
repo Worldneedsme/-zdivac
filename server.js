@@ -8,6 +8,7 @@ const multer = require('multer');
 const { Server } = require('socket.io');
 const db = require('./db');
 const { createBots } = require('./bots');
+const { cleanProfile } = require('./public/profile-options');
 
 const PORT = process.env.PORT || 3000;
 const REQUIRED_QUESTIONS = 5;
@@ -63,6 +64,7 @@ const publicUser = (u) => ({
   age: u.age,
   hometown: u.hometown || '',
   occupation: u.occupation || '',
+  profile: u.profile || {},
   isBot: !!u.isBot,
 });
 
@@ -245,7 +247,9 @@ app.patch('/api/me', auth, (req, res) => {
   const hometown = cleanText(req.body.hometown, 40);
   const occupation = cleanText(req.body.occupation, 40);
   if (!hometown || !occupation) return res.status(400).json({ error: 'Memleket ve meslek boş olamaz.' });
-  Object.assign(req.user, { hometown, occupation });
+  const { profile, error } = cleanProfile(req.body.profile);
+  if (error) return res.status(400).json({ error });
+  Object.assign(req.user, { hometown, occupation, profile });
   db.save();
   res.json({ user: ownProfile(req.user) });
 });
