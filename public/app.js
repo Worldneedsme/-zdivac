@@ -408,8 +408,7 @@ function maybePlayReveal(conv) {
   $('#composer-input').blur();
   window.playReveal({
     partner: conv.partner,
-    me: state.me,
-    onLook: () => conv.partner.photos[0] && openLightbox(conv.partner.photos[0]),
+    onLook: (src) => openLightbox(src || conv.partner.photos[0]),
   });
 }
 
